@@ -827,13 +827,7 @@
           blob = new Blob([ab], { type: mime });
           fileName = build.fileName;
         } else if (staticFiles[platform]) {
-          const a = document.createElement('a');
-          a.href = staticFiles[platform].path;
-          a.download = staticFiles[platform].name;
-          a.target = '_blank';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
+          window.location.href = staticFiles[platform].path;
           const newCount = await incrementDl(platform);
           const countEl = document.querySelector(`[data-dl="${platform}"]`);
           if (countEl) countEl.textContent = newCount.toLocaleString() + ' downloads';
