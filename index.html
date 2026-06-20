@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abdijabar Tech — Beautiful Calculator. Powerful Results.</title>
+  <meta name="description" content="Abdijabar Tech is a premium calculator app for Android and Windows. Fast, secure, and beautifully designed.">
+  <meta name="keywords" content="calculator, abdijabar tech, math, algebra, graphing, scientific calculator">
+  <meta property="og:title" content="Abdijabar Tech — Beautiful Calculator. Powerful Results.">
+  <meta property="og:description" content="A premium calculator experience across all your devices.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/AT.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" type="image/png" href="assets/AT.png">
+  <link rel="apple-touch-icon" href="assets/AT.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--base-h:250;--primary:#6366f1;--primary-light:#818cf8;--primary-dark:#4f46e5;--primary-glow:rgba(99,102,241,0.3);--accent:#06b6d4;--accent-glow:rgba(6,182,212,0.3);--bg:#0a0a0f;--bg-secondary:#12121a;--bg-card:rgba(255,255,255,0.04);--bg-glass:rgba(255,255,255,0.06);--border:rgba(255,255,255,0.08);--border-hover:rgba(255,255,255,0.15);--text:#f1f1f7;--text-secondary:#9492a6;--text-tertiary:#6b6a7d;--radius-sm:8px;--radius:12px;--radius-md:16px;--radius-lg:24px;--radius-xl:32px;--max-w:1200px;--nav-h:64px;--font-display:'Plus Jakarta Sans',sans-serif;--font-body:'Inter',sans-serif;--font-mono:'JetBrains Mono',monospace;--ease-out-expo:cubic-bezier(0.16,1,0.3,1);--ease-spring:cubic-bezier(0.34,1.56,0.64,1)}
+    [data-theme="light"]{--bg:#f8f9ff;--bg-secondary:#f0f1fe;--bg-card:rgba(0,0,0,0.02);--bg-glass:rgba(255,255,255,0.7);--border:rgba(0,0,0,0.08);--border-hover:rgba(0,0,0,0.15);--text:#0f0f1a;--text-secondary:#55546a;--text-tertiary:#8a89a0}
+    html{scroll-behavior:smooth;scroll-padding-top:80px}
+    body{font-family:var(--font-body);background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden;transition:background .4s,color .4s;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--text-tertiary);border-radius:3px}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;height:auto;display:block}
+    .container{max-width:var(--max-w);margin:0 auto;padding:0 24px;position:relative;z-index:1}
+    @media(max-width:768px){.container{padding:0 16px}}
+
+    /* Noise overlay */
+    .noise{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:256px 256px}
+    .gradient-orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;opacity:.12;transition:opacity .6s}
+    .gradient-orb:nth-child(1){width:700px;height:700px;background:var(--primary);top:-20%;left:-10%}
+    .gradient-orb:nth-child(2){width:500px;height:500px;background:var(--accent);bottom:-10%;right:-5%}
+    .gradient-orb:nth-child(3){width:400px;height:400px;background:var(--primary);top:50%;left:50%;transform:translate(-50%,-50%)}
+    [data-theme="light"] .gradient-orb{opacity:.06}
+
+    /* Nav */
+    nav{position:fixed;top:0;left:0;right:0;z-index:1000;height:var(--nav-h);transition:all .4s;background:transparent}
+    nav.scrolled{background:rgba(10,10,15,.78);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+    [data-theme="light"] nav.scrolled{background:rgba(248,249,255,.82)}
+    nav .nav-inner{max-width:var(--max-w);margin:0 auto;padding:0 24px;height:100%;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    nav .nav-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:800;font-size:18px}
+    nav .nav-brand img{width:32px;height:32px;border-radius:8px}
+    nav .nav-links{display:flex;align-items:center;gap:4px}
+    nav .nav-links a{padding:8px 14px;font-size:13px;font-weight:500;color:var(--text-secondary);border-radius:var(--radius-sm);transition:all .25s;position:relative}
+    nav .nav-links a:hover{color:var(--text);background:var(--bg-glass)}
+    nav .nav-actions{display:flex;align-items:center;gap:8px}
+    .theme-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--bg-glass);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .25s;backdrop-filter:blur(8px)}
+    .theme-btn:hover{border-color:var(--border-hover);color:var(--text);transform:scale(1.05)}
+    .hamburger{display:none;width:36px;height:36px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-glass);color:var(--text);cursor:pointer;align-items:center;justify-content:center;font-size:18px;transition:all .25s}
+    @media(max-width:768px){nav .nav-links{display:none;position:fixed;top:var(--nav-h);left:16px;right:16px;background:rgba(10,10,15,.95);backdrop-filter:blur(24px);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px;flex-direction:column;gap:0}.hamburger{display:flex}nav .nav-links.open{display:flex}nav .nav-links a{width:100%;padding:12px 16px}}
+    .mobile-only{display:none}@media(max-width:768px){.mobile-only{display:flex}}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-body);font-size:14px;font-weight:600;padding:12px 28px;border-radius:var(--radius);border:none;cursor:pointer;transition:all .35s var(--ease-out-expo);text-decoration:none;position:relative;overflow:hidden;white-space:nowrap;letter-spacing:-.01em}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 4px 24px var(--primary-glow)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 40px var(--primary-glow)}
+    .btn-secondary{background:var(--bg-glass);border:1px solid var(--border);color:var(--text);backdrop-filter:blur(12px)}
+    .btn-secondary:hover{background:var(--bg-card);border-color:var(--border-hover);transform:translateY(-2px)}
+    .btn-sm{padding:8px 18px;font-size:13px;border-radius:var(--radius-sm)}
+    .btn .badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse-dot 2s infinite}
+
+    /* Hero */
+    .hero{min-height:100vh;display:flex;align-items:center;padding:80px 0 40px;position:relative;z-index:1;overflow:hidden}
+    .hero .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+    .hero .hero-badge{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--accent);background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.2);padding:6px 16px;border-radius:100px;margin-bottom:20px;animation:fadeUp .6s ease}
+    .hero h1{font-family:var(--font-display);font-size:clamp(36px,5vw,64px);font-weight:800;line-height:1.08;letter-spacing:-.03em;margin-bottom:20px;animation:fadeUp .6s ease .1s both}
+    .hero h1 .gradient-text{background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero p{font-size:clamp(16px,1.2vw,20px);color:var(--text-secondary);max-width:520px;margin-bottom:32px;animation:fadeUp .6s ease .2s both;line-height:1.7}
+    .hero .hero-actions{display:flex;gap:12px;flex-wrap:wrap;animation:fadeUp .6s ease .3s both}
+    .hero .hero-trust{display:flex;align-items:center;gap:24px;margin-top:40px;flex-wrap:wrap;animation:fadeUp .6s ease .4s both}
+    .hero .hero-trust .avatars{display:flex;margin-right:4px}
+    .hero .hero-trust .avatars span{width:36px;height:36px;border-radius:50%;border:2px solid var(--bg);margin-left:-10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff}
+    .hero .hero-trust .avatars span:first-child{margin-left:0}
+    .hero .hero-trust .rating{display:flex;flex-direction:column;gap:2px}
+    .hero .hero-trust .rating .stars{color:#fbbf24;font-size:14px;letter-spacing:2px}
+    .hero .hero-trust .rating span{font-size:13px;color:var(--text-secondary)}
+    .hero .hero-visual{position:relative;display:flex;align-items:center;justify-content:center;animation:fadeUp .6s ease .2s both}
+    .hero .hero-visual .mockup{width:100%;max-width:520px;border-radius:var(--radius-lg);box-shadow:0 32px 128px rgba(0,0,0,.4);border:1px solid var(--border);background:var(--bg-secondary);overflow:hidden}
+    .hero .hero-visual .mockup img{width:100%;height:auto;display:block}
+    .hero .floating-card{position:absolute;background:var(--bg-glass);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.2);animation:float 4s ease-in-out infinite}
+    .hero .floating-card:nth-child(2){top:8%;right:-5%;animation-delay:-1s}
+    .hero .floating-card:nth-child(3){bottom:12%;left:-8%;animation-delay:-2.5s}
+    .hero .floating-card .fc-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:18px}
+    .hero .floating-card .fc-text{font-size:12px;font-weight:600}
+    .hero .floating-card .fc-text small{display:block;font-weight:400;font-size:11px;color:var(--text-tertiary)}
+    @media(max-width:900px){.hero .hero-grid{grid-template-columns:1fr;gap:32px;text-align:center}.hero p{margin-left:auto;margin-right:auto}.hero .hero-actions{justify-content:center}.hero .hero-trust{justify-content:center}.hero .floating-card{display:none}}
+
+    /* Section */
+    section{padding:100px 0;position:relative;z-index:1}
+    .section-label{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--primary);margin-bottom:12px}
+    .section-title{font-family:var(--font-display);font-size:clause(28px,3vw,42px);font-weight:800;letter-spacing:-.02em;margin-bottom:16px;line-height:1.15}
+    .section-subtitle{font-size:clamp(15px,1.1vw,18px);color:var(--text-secondary);max-width:560px;margin:0 auto 48px;text-align:center}
+    .section-header{text-align:center;margin-bottom:48px}
+
+    /* Features */
+    .features-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+    .feature-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:28px 24px;transition:all .4s var(--ease-out-expo);position:relative;overflow:hidden}
+    .feature-card::before{content:'';position:absolute;inset:0;border-radius:inherit;opacity:0;transition:opacity .4s;background:radial-gradient(600px circle at var(--mx,50%) var(--my,50%),rgba(99,102,241,.06) 0%,transparent 60%);pointer-events:none}
+    .feature-card:hover::before{opacity:1}
+    .feature-card:hover{transform:translateY(-4px);border-color:var(--border-hover);box-shadow:0 12px 48px rgba(0,0,0,.08)}
+    .feature-card .fc-icon{width:44px;height:44px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.12)}
+    .feature-card h3{font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:6px}
+    .feature-card p{font-size:14px;color:var(--text-secondary);line-height:1.6}
+    @media(max-width:1024px){.features-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:640px){.features-grid{grid-template-columns:1fr}}
+
+    /* Screenshots */
+    .screenshots-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .screenshots-grid .ss-item{position:relative;border-radius:var(--radius-md);overflow:hidden;cursor:pointer;aspect-ratio:9/19;border:1px solid var(--border);transition:all .4s var(--ease-out-expo)}
+    .screenshots-grid .ss-item:hover{transform:scale(1.02);border-color:var(--border-hover);box-shadow:0 16px 64px rgba(0,0,0,.2)}
+    .screenshots-grid .ss-item img{width:100%;height:100%;object-fit:cover;display:block}
+    .screenshots-grid .ss-item:first-child{grid-column:span 2;grid-row:span 2}
+    .screenshots-grid .ss-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent 50%);opacity:0;transition:opacity .3s;display:flex;align-items:flex-end;padding:16px}
+    .screenshots-grid .ss-item:hover .ss-overlay{opacity:1}
+    @media(max-width:768px){.screenshots-grid{grid-template-columns:repeat(2,1fr)}.screenshots-grid .ss-item:first-child{grid-column:span 2;grid-row:span 1}}
+    @media(max-width:480px){.screenshots-grid{grid-template-columns:1fr}.screenshots-grid .ss-item:first-child{grid-column:1}}
+
+    /* Lightbox */
+    .lightbox{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.9);backdrop-filter:blur(40px);display:none;align-items:center;justify-content:center;padding:40px;opacity:0;transition:opacity .3s}
+    .lightbox.active{display:flex;opacity:1}
+    .lightbox img{max-width:90vw;max-height:90vh;border-radius:var(--radius-md);border:1px solid var(--border)}
+    .lightbox .close-lb{position:absolute;top:24px;right:24px;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:rgba(255,255,255,.1);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s}
+    .lightbox .close-lb:hover{background:rgba(255,255,255,.2);transform:scale(1.05)}
+    .lightbox .lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;border:1px solid var(--border);background:rgba(255,255,255,.08);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s}
+    .lightbox .lb-nav:hover{background:rgba(255,255,255,.15)}
+    .lightbox .lb-prev{left:24px}.lightbox .lb-next{right:24px}
+
+    /* Stats */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+    .stat-card{text-align:center;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:36px 20px;transition:all .3s}
+    .stat-card:hover{transform:translateY(-4px);border-color:var(--border-hover)}
+    .stat-card .stat-value{font-family:var(--font-display);font-size:clamp(28px,2.5vw,42px);font-weight:800;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .stat-card .stat-label{font-size:14px;color:var(--text-secondary);margin-top:4px;font-weight:500}
+    .stat-card .stat-icon{font-size:28px;margin-bottom:12px}
+    @media(max-width:768px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+
+    /* Download */
+    .download-grid{display:flex;justify-content:center;gap:32px;flex-wrap:wrap}
+    .download-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:40px;text-align:center;transition:all .35s var(--ease-out-expo);position:relative;min-width:280px;flex:0 1 320px}
+    .download-card:hover{transform:translateY(-6px);border-color:var(--border-hover);box-shadow:0 16px 56px rgba(0,0,0,.08)}
+    .download-card .dl-icon{font-size:52px;margin-bottom:16px}
+    .download-card h4{font-family:var(--font-display);font-size:20px;font-weight:700;margin-bottom:6px}
+    .download-card .dl-meta{font-size:14px;color:var(--text-tertiary);margin-bottom:6px}
+    .download-card .dl-count{font-size:13px;color:var(--text-tertiary);margin-bottom:20px}
+    .download-card .btn{width:100%;padding:14px 24px;font-size:16px}
+
+    /* Changelog */
+    .timeline{position:relative;max-width:720px;margin:0 auto}
+    .timeline::before{content:'';position:absolute;left:16px;top:0;bottom:0;width:2px;background:var(--border)}
+    .timeline-item{position:relative;padding-left:48px;padding-bottom:36px}
+    .timeline-item:last-child{padding-bottom:0}
+    .timeline-item::before{content:'';position:absolute;left:10px;top:6px;width:14px;height:14px;border-radius:50%;border:2px solid var(--primary);background:var(--bg)}
+    .timeline-item .tl-version{font-family:var(--font-mono);font-size:13px;color:var(--primary);font-weight:500;margin-bottom:2px}
+    .timeline-item .tl-date{font-size:12px;color:var(--text-tertiary);margin-bottom:10px}
+    .timeline-item .tl-content h4{font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:6px}
+    .timeline-item .tl-content ul{list-style:none;font-size:14px;color:var(--text-secondary)}
+    .timeline-item .tl-content ul li{padding:3px 0;padding-left:20px;position:relative}
+    .timeline-item .tl-content ul li::before{content:'+';position:absolute;left:0;color:var(--primary);font-weight:700}
+    .timeline-item .tl-content ul li.fix::before{content:'✓';color:var(--accent)}
+
+    /* Testimonials */
+    .testimonials{overflow:hidden;position:relative}
+    .testimonials-track{display:flex;gap:20px;transition:transform .6s var(--ease-out-expo)}
+    .testimonial-card{min-width:calc(33.333% - 14px);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:28px;flex-shrink:0}
+    .testimonial-card .tc-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+    .testimonial-card .tc-header img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
+    .testimonial-card .tc-header .tc-name{font-weight:600;font-size:14px}
+    .testimonial-card .tc-header .tc-name small{display:block;font-weight:400;font-size:12px;color:var(--text-tertiary)}
+    .testimonial-card .tc-stars{color:#fbbf24;font-size:13px;margin-bottom:10px;letter-spacing:2px}
+    .testimonial-card .tc-text{font-size:14px;color:var(--text-secondary);line-height:1.7}
+    .testimonial-nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:28px}
+    .testimonial-nav button{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--bg-glass);color:var(--text);cursor:pointer;font-size:16px;transition:all .25s;display:flex;align-items:center;justify-content:center}
+    .testimonial-nav button:hover{background:var(--bg-card);border-color:var(--border-hover)}
+    .testimonial-dots{display:flex;gap:6px}
+    .testimonial-dots span{width:8px;height:8px;border-radius:50%;background:var(--text-tertiary);cursor:pointer;transition:all .3s}
+    .testimonial-dots span.active{width:24px;border-radius:4px;background:var(--primary)}
+    @media(max-width:900px){.testimonial-card{min-width:calc(50% - 10px)}}
+    @media(max-width:640px){.testimonial-card{min-width:100%}}
+
+    /* FAQ */
+    .faq-list{max-width:700px;margin:0 auto}
+    .faq-item{border-bottom:1px solid var(--border);padding:4px 0}
+    .faq-question{width:100%;display:flex;align-items:center;justify-content:space-between;padding:20px 0;background:none;border:none;color:var(--text);font-size:16px;font-weight:600;cursor:pointer;text-align:left;transition:color .3s;gap:16px}
+    .faq-question:hover{color:var(--primary)}
+    .faq-question .faq-icon{font-size:14px;transition:transform .4s var(--ease-spring);flex-shrink:0;color:var(--text-tertiary)}
+    .faq-item.open .faq-question .faq-icon{transform:rotate(45deg);color:var(--primary)}
+    .faq-answer{max-height:0;overflow:hidden;transition:max-height .5s var(--ease-out-expo),padding .4s;padding:0}
+    .faq-item.open .faq-answer{max-height:300px;padding-bottom:20px}
+    .faq-answer p{font-size:15px;color:var(--text-secondary);line-height:1.7}
+
+    /* Developer */
+    .developer-card{max-width:600px;margin:0 auto;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px;text-align:center;transition:all .3s}
+    .developer-card:hover{border-color:var(--border-hover)}
+    .developer-card .dev-img{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--border);margin:0 auto 16px}
+    .developer-card h3{font-family:var(--font-display);font-size:22px;font-weight:800}
+    .developer-card .dev-role{font-size:14px;color:var(--primary);font-weight:500;margin-bottom:8px}
+    .developer-card .dev-bio{font-size:14px;color:var(--text-secondary);max-width:420px;margin:0 auto 16px;line-height:1.7}
+    .developer-card .dev-skills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px}
+    .developer-card .dev-skills span{font-size:12px;font-weight:500;padding:4px 14px;border-radius:100px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.12);color:var(--primary)}
+    .developer-card .dev-links{display:flex;justify-content:center;gap:12px}
+    .developer-card .dev-links a{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .25s;color:var(--text-secondary)}
+    .developer-card .dev-links a:hover{background:var(--bg-glass);border-color:var(--border-hover);color:var(--text);transform:translateY(-2px)}
+
+    /* Contact */
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+    .contact-form{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:32px}
+    .contact-form .form-group{margin-bottom:16px}
+    .contact-form label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary);margin-bottom:6px}
+    .contact-form input,.contact-form textarea{width:100%;padding:12px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-glass);color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;transition:all .25s}
+    .contact-form input:focus,.contact-form textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-glow)}
+    .contact-form textarea{resize:vertical;min-height:120px}
+    .contact-form .form-error{font-size:12px;color:#ef4444;margin-top:4px;display:none}
+    .contact-form .form-group.error input,.contact-form .form-group.error textarea{border-color:#ef4444}
+    .contact-form .form-group.error .form-error{display:block}
+    .contact-info{display:flex;flex-direction:column;gap:20px;justify-content:center}
+    .contact-info .ci-item{display:flex;align-items:center;gap:14px;font-size:14px;color:var(--text-secondary)}
+    .contact-info .ci-item .ci-icon{width:44px;height:44px;border-radius:var(--radius-sm);background:var(--bg-card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .contact-info .ci-item a{color:var(--text);font-weight:500}
+    .contact-info .ci-item a:hover{color:var(--primary)}
+    @media(max-width:768px){.contact-grid{grid-template-columns:1fr}}
+
+    /* Footer */
+    footer{border-top:1px solid var(--border);padding:48px 0 24px;margin-top:40px;position:relative;z-index:1}
+    footer .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px;margin-bottom:32px}
+    footer .footer-brand .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:800;font-size:18px;margin-bottom:12px}
+    footer .footer-brand .logo img{width:28px;height:28px;border-radius:6px}
+    footer .footer-brand p{font-size:14px;color:var(--text-tertiary);max-width:260px;line-height:1.6}
+    footer h5{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary);margin-bottom:14px}
+    footer a{display:block;font-size:14px;color:var(--text-secondary);margin-bottom:8px;transition:color .25s}
+    footer a:hover{color:var(--text)}
+    footer .footer-bottom{border-top:1px solid var(--border);padding-top:20px;display:flex;justify-content:space-between;font-size:13px;color:var(--text-tertiary)}
+    footer .footer-bottom .social-links{display:flex;gap:12px}
+    footer .footer-bottom .social-links a{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;margin:0}
+    footer .footer-bottom .social-links a:hover{background:var(--bg-glass);border-color:var(--border-hover)}
+    .upload-panel select option{background:var(--bg);color:var(--text)}
+    @media(max-width:640px){.upload-panel .upload-form{grid-template-columns:1fr}}
+    @media(max-width:768px){footer .footer-grid{grid-template-columns:1fr 1fr}footer .footer-bottom{flex-direction:column;gap:12px;align-items:center;text-align:center}}
+
+    /* Back to top */
+    .back-to-top{position:fixed;bottom:24px;right:24px;z-index:999;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--bg-glass);backdrop-filter:blur(16px);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:0;transform:translateY(20px);transition:all .35s var(--ease-out-expo);pointer-events:none}
+    .back-to-top.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+    .back-to-top:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,.2)}
+
+    /* Floating Download */
+    .float-dl{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);z-index:999;border-radius:100px;padding:12px 24px;background:var(--bg-glass);backdrop-filter:blur(24px);border:1px solid var(--border);display:flex;align-items:center;gap:16px;box-shadow:0 8px 32px rgba(0,0,0,.3);opacity:0;transition:all .6s var(--ease-out-expo);pointer-events:none}
+    .float-dl.visible{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+    .float-dl span{font-size:14px;font-weight:600;white-space:nowrap}
+    @media(max-width:640px){.float-dl{display:none}}
+
+    /* Notification */
+    .notification{position:fixed;top:80px;right:24px;z-index:2001;background:var(--bg-glass);backdrop-filter:blur(24px);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.2);transform:translateX(120%);transition:transform .5s var(--ease-out-expo);max-width:360px}
+    .notification.show{transform:translateX(0)}
+    .notification .notif-icon{width:32px;height:32px;border-radius:50%;background:rgba(6,182,212,.1);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .notification .notif-text{font-size:13px;font-weight:500}
+    .notification .notif-text small{display:block;font-weight:400;font-size:12px;color:var(--text-tertiary)}
+    @media(max-width:640px){.notification{left:16px;right:16px;max-width:none}}
+
+    /* Page loader */
+    .page-loader{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .6s,visibility .6s}
+    .page-loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+    .page-loader .loader-ring{width:48px;height:48px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--primary);animation:spin .8s linear infinite}
+
+    /* Animations */
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
+    @keyframes countIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+    /* Scroll reveal */
+    .reveal{opacity:0;transform:translateY(30px);transition:opacity .8s var(--ease-out-expo),transform .8s var(--ease-out-expo)}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+
+    /* Utility */
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+  </style>
+</head>
+<body>
+  <div class="page-loader" id="pageLoader"><div class="loader-ring"></div></div>
+  <div class="noise"></div>
+  <div class="gradient-orb"></div>
+  <div class="gradient-orb"></div>
+  <div class="gradient-orb"></div>
+
+  <!-- Nav -->
+  <nav id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="#" class="nav-brand">
+        <img src="assets/AT.png" alt="Abdijabar Tech logo" width="32" height="32" loading="lazy">
+        Abdijabar Tech
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="#features">Features</a>
+        <a href="#screenshots">Screenshots</a>
+        <a href="#downloads">Download</a>
+        <a href="#changelog">Changelog</a>
+        <a href="#testimonials">Testimonials</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="nav-actions">
+        <button class="theme-btn" id="themeToggle" aria-label="Toggle theme">🌙</button>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">☰</button>
+        <a href="#downloads" class="btn btn-primary btn-sm mobile-only">Download</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" id="home">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-text">
+          <div class="hero-badge"><span class="badge-dot"></span> Now Available on All Platforms</div>
+          <h1>Beautiful <span class="gradient-text">Calculator</span>.<br>Powerful Results.</h1>
+          <p>Abdijabar Tech is a premium, cross-platform calculator built for speed and elegance. From basic arithmetic to advanced graphing — it just flows.</p>
+          <div class="hero-actions">
+            <a href="#downloads" class="btn btn-primary">Download Free</a>
+            <a href="#features" class="btn btn-secondary">Explore Features</a>
+          </div>
+          <div class="hero-trust">
+            <div class="avatars">
+              <span style="background:#6366f1">A</span>
+              <span style="background:#06b6d4">B</span>
+              <span style="background:#8b5cf6">C</span>
+              <span style="background:#f59e0b">D</span>
+              <span style="background:#10b981">E</span>
+            </div>
+            <div class="rating">
+              <div class="stars">★★★★★</div>
+              <span>4.9 avg rating from 12K+ reviews</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="mockup">
+            <img src="assets/icon/screen.png" alt="Abdijabar Tech app preview" loading="lazy">
+          </div>
+          <div class="floating-card">
+            <div class="fc-icon" style="background:rgba(99,102,241,.12);color:var(--primary)">⚡</div>
+            <div class="fc-text">12ms response<small>Real-time calculations</small></div>
+          </div>
+          <div class="floating-card">
+            <div class="fc-icon" style="background:rgba(6,182,212,.12);color:var(--accent)">🛡️</div>
+            <div class="fc-text">100% private<small>Data never leaves device</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">Features</div>
+        <h2 class="section-title">Everything you need, nothing you don't.</h2>
+        <p class="section-subtitle">Designed from the ground up for performance, privacy, and pixel-perfect precision.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card reveal" data-reveal-delay="0"><div class="fc-icon">⚡</div><h3>Fast Performance</h3><p>Near-instant calculations powered by a native C++ engine with GPU acceleration.</p></div>
+        <div class="feature-card reveal" data-reveal-delay="50"><div class="fc-icon">🔒</div><h3>Secure & Private</h3><p>All computations happen locally. Zero data collection. End-to-end encrypted sync.</p></div>
+        <div class="feature-card reveal" data-reveal-delay="100"><div class="fc-icon">☁️</div><h3>Cloud Sync</h3><p>Seamlessly sync your history and presets across all devices with iCloud / Google Drive.</p></div>
+        <div class="feature-card reveal" data-reveal-delay="150"><div class="fc-icon">🤖</div><h3>AI-Powered Tools</h3><p>Smart suggestions, equation solving, and step-by-step explanations powered by on-device ML.</p></div>
+        <div class="feature-card reveal" data-reveal-delay="200"><div class="fc-icon">📡</div><h3>Offline Support</h3><p>Fully functional offline. No internet connection required for any core feature.</p></div>
+        <div class="feature-card reveal" data-reveal-delay="250"><div class="fc-icon">🖥️</div><h3>Cross-Platform</h3><p>Native experience on Android and Windows with a unified codebase.</p></div>
+        <div class="feature-card reveal" data-reveal-delay="300"><div class="fc-icon">✨</div><h3>Easy Interface</h3><p>Minimal, distraction-free UI designed for flow state. Customizable themes and layouts.</p></div>
+        <div class="feature-card reveal" data-reveal-delay="350"><div class="fc-icon">🔄</div><h3>Regular Updates</h3><p>Bi-weekly releases with new features, improvements, and community-driven enhancements.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots -->
+  <section id="screenshots">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">Gallery</div>
+        <h2 class="section-title">See it in action.</h2>
+        <p class="section-subtitle">A glance at the experience that makes Abdijabar Tech the most loved calculator app.</p>
+      </div>
+      <div class="screenshots-grid reveal">
+        <div class="ss-item"><img src="assets/icon/screen.png" alt="Abdijabar Tech screenshot 1" loading="lazy"><div class="ss-overlay"><span style="font-size:13px;font-weight:500;color:#fff">Main Interface</span></div></div>
+        <div class="ss-item"><img src="assets/icon/screen.png" alt="Abdijabar Tech screenshot 2" loading="lazy"><div class="ss-overlay"><span style="font-size:13px;font-weight:500;color:#fff">Graphing Mode</span></div></div>
+        <div class="ss-item"><img src="assets/icon/screen.png" alt="Abdijabar Tech screenshot 3" loading="lazy"><div class="ss-overlay"><span style="font-size:13px;font-weight:500;color:#fff">Scientific View</span></div></div>
+        <div class="ss-item"><img src="assets/icon/screen.png" alt="Abdijabar Tech screenshot 4" loading="lazy"><div class="ss-overlay"><span style="font-size:13px;font-weight:500;color:#fff">History Panel</span></div></div>
+        <div class="ss-item"><img src="assets/icon/screen.png" alt="Abdijabar Tech screenshot 5" loading="lazy"><div class="ss-overlay"><span style="font-size:13px;font-weight:500;color:#fff">Theme Customizer</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section>
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-card reveal"><div class="stat-icon">📥</div><div class="stat-value" data-count="250000">0</div><div class="stat-label">Total Downloads</div></div>
+        <div class="stat-card reveal"><div class="stat-icon">👤</div><div class="stat-value" data-count="85000">0</div><div class="stat-label">Active Users</div></div>
+        <div class="stat-card reveal"><div class="stat-icon">🌍</div><div class="stat-value" data-count="120">0</div><div class="stat-label">Countries Reached</div></div>
+        <div class="stat-card reveal"><div class="stat-icon">⭐</div><div class="stat-value" data-count="49">4.9</div><div class="stat-label">Average Rating</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download -->
+  <section id="downloads">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">Download</div>
+        <h2 class="section-title">Get Abdijabar Tech. Free.</h2>
+        <p class="section-subtitle">Available on every major platform. No sign-up required.</p>
+      </div>
+      <div class="download-grid" id="downloadGrid">
+        <div class="download-card reveal" data-platform="android"><div class="dl-icon">🤖</div><h4>Android</h4><div class="dl-meta">APK</div><div class="dl-meta dl-size">---</div><div class="dl-count" data-dl="android">0 downloads</div><a href="#" class="btn btn-primary btn-sm dl-btn" data-platform="Android">Download APK</a></div>
+        <div class="download-card reveal" data-platform="windows"><div class="dl-icon">🪟</div><h4>Windows</h4><div class="dl-meta">EXE</div><div class="dl-meta dl-size">---</div><div class="dl-count" data-dl="windows">0 downloads</div><a href="#" class="btn btn-primary btn-sm dl-btn" data-platform="Windows">Download EXE</a></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Changelog -->
+  <section id="changelog">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">Changelog</div>
+        <h2 class="section-title">Always evolving.</h2>
+        <p class="section-subtitle">We ship frequently. Here's what's new.</p>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item reveal"><div class="tl-version">v3.2.0</div><div class="tl-date">June 12, 2026</div><div class="tl-content"><h4>AI-Powered Graphing</h4><ul><li>On-device ML equation solver</li><li>Interactive 3D graphing engine</li><li>Real-time collaboration sync</li><li class="fix">Improved accessibility support</li><li class="fix">Battery usage optimization</li></ul></div></div>
+        <div class="timeline-item reveal"><div class="tl-version">v3.1.0</div><div class="tl-date">May 28, 2026</div><div class="tl-content"><h4>Dark Mode Redesign</h4><ul><li>Completely revamped dark theme</li><li>Custom theme builder</li><li>iPad split-view support</li><li class="fix">Fixed history sync race condition</li><li class="fix">Keyboard shortcut improvements</li></ul></div></div>
+        <div class="timeline-item reveal"><div class="tl-version">v3.0.0</div><div class="tl-date">May 1, 2026</div><div class="tl-content"><h4>Major Redesign</h4><ul><li>Complete UI overhaul with glassmorphism</li><li>Cross-platform cloud sync</li><li>Plugin SDK for developers</li><li class="fix">50% faster cold start</li><li class="fix">Memory usage reduced by 40%</li></ul></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">Testimonials</div>
+        <h2 class="section-title">Loved by thousands.</h2>
+        <p class="section-subtitle">See what our users are saying about Abdijabar Tech.</p>
+      </div>
+      <div class="testimonials reveal">
+        <div class="testimonials-track" id="testTrack">
+          <div class="testimonial-card"><div class="tc-header"><img src="assets/Me.jpeg" alt="Sarah Chen" loading="lazy"><div class="tc-name">Sarah Chen<small>Software Engineer</small></div></div><div class="tc-stars">★★★★★</div><div class="tc-text">"Abdijabar Tech is hands-down the best calculator I've ever used. The graphing engine alone is worth the download. It's become my daily driver."</div></div>
+          <div class="testimonial-card"><div class="tc-header"><img src="assets/Me.jpeg" alt="Abdijabar Mohamed" loading="lazy"><div class="tc-name">Abdijabar Mohamed<small>Data Scientist</small></div></div><div class="tc-stars">★★★★★</div><div class="tc-text">"The AI-powered equation solver is incredible. It not only solves but explains each step. Perfect for teaching and learning."</div></div>
+          <div class="testimonial-card"><div class="tc-header"><img src="assets/Me.jpeg" alt="Emily Nakamura" loading="lazy"><div class="tc-name">Emily Nakamura<small>UX Designer</small></div></div><div class="tc-stars">★★★★★</div><div class="tc-text">"Finally, a calculator that respects design as much as function. The glassmorphism theme is gorgeous and the animations are butter smooth."</div></div>
+          <div class="testimonial-card"><div class="tc-header"><img src="assets/Me.jpeg" alt="David Park" loading="lazy"><div class="tc-name">David Park<small>Physics Student</small></div></div><div class="tc-stars">★★★★★</div><div class="tc-text">"From basic algebra to quantum mechanics, Abdijabar Tech handles it all. The offline support means I never lose access during exams."</div></div>
+          <div class="testimonial-card"><div class="tc-header"><img src="assets/Me.jpeg" alt="Priya Sharma" loading="lazy"><div class="tc-name">Priya Sharma<small>Math Teacher</small></div></div><div class="tc-stars">★★★★★</div><div class="tc-text">"I recommend Abdijabar Tech to all my students. The step-by-step explanations and clean interface make learning math genuinely enjoyable."</div></div>
+        </div>
+      </div>
+      <div class="testimonial-nav">
+        <button id="testPrev" aria-label="Previous">←</button>
+        <div class="testimonial-dots" id="testDots"></div>
+        <button id="testNext" aria-label="Next">→</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Frequently asked questions.</h2>
+        <p class="section-subtitle">Everything you need to know about Abdijabar Tech.</p>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item reveal"><button class="faq-question">Is Abdijabar Tech really free?<span class="faq-icon">+</span></button><div class="faq-answer"><p>Yes, Abdijabar Tech is completely free to download and use. We offer a premium subscription for advanced features like cloud sync and AI-powered graphing, but the core experience is free forever.</p></div></div>
+        <div class="faq-item reveal"><button class="faq-question">Is my data secure?<span class="faq-icon">+</span></button><div class="faq-answer"><p>Absolutely. All calculations happen locally on your device. We never collect, store, or transmit your personal data. Optional cloud sync uses end-to-end encryption.</p></div></div>
+        <div class="faq-item reveal"><button class="faq-question">Which platforms are supported?<span class="faq-icon">+</span></button><div class="faq-answer"><p>Abdijabar Tech is available on Android (APK) and Windows (EXE). All platforms receive simultaneous updates with feature parity.</p></div></div>
+        <div class="faq-item reveal"><button class="faq-question">How often is Abdijabar Tech updated?<span class="faq-icon">+</span></button><div class="faq-answer"><p>We ship a minor update every two weeks and a major release every quarter. Our changelog is publicly available and we actively respond to community feedback.</p></div></div>
+        <div class="faq-item reveal"><button class="faq-question">Can I use Abdijabar Tech offline?<span class="faq-icon">+</span></button><div class="faq-answer"><p>Yes, Abdijabar Tech is fully functional offline. No internet connection is required for calculations, graphing, or any core feature. Cloud sync is optional and only activates when you choose to sign in.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Developer -->
+  <section id="developer">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">Developer</div>
+        <h2 class="section-title">Built with passion.</h2>
+        <p class="section-subtitle">Meet the person behind Abdijabar Tech.</p>
+      </div>
+      <div class="developer-card reveal">
+        <img src="assets/Me.jpeg" alt="Developer" class="dev-img" loading="lazy">
+        <h3>Abdijabar</h3>
+        <div class="dev-role">Full-Stack Developer &amp; Designer</div>
+        <p class="dev-bio">I'm a software engineer passionate about crafting beautiful, performant cross-platform applications. Abdijabar Tech started as a side project to build the calculator I always wanted — minimal, powerful, and available everywhere. Now it's used by thousands worldwide.</p>
+        <div class="dev-skills">
+          <span>Flutter</span><span>Dart</span><span>C++</span><span>Swift</span><span>React</span><span>Python</span>
+        </div>
+        <div class="dev-links">
+          <a href="https://github.com/Ubdyjabaar" aria-label="GitHub">⌂</a>
+          <a href="https://www.facebook.com/share/1EzRjM1whb/" aria-label="Facebook">f</a>
+          <a href="mailto:Jibaar21@gmail.com" aria-label="Email">✉</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">Contact</div>
+        <h2 class="section-title">Get in touch.</h2>
+        <p class="section-subtitle">Have a question, suggestion, or just want to say hi?</p>
+      </div>
+      <div class="contact-grid">
+        <form class="contact-form reveal" id="contactForm" novalidate>
+          <div class="form-group"><label for="formName">Name</label><input type="text" id="formName" placeholder="Your name" required><div class="form-error">Please enter your name.</div></div>
+          <div class="form-group"><label for="formEmail">Email</label><input type="email" id="formEmail" placeholder="you@example.com" required><div class="form-error">Please enter a valid email.</div></div>
+          <div class="form-group"><label for="formSubject">Subject</label><input type="text" id="formSubject" placeholder="What's this about?" required><div class="form-error">Please enter a subject.</div></div>
+          <div class="form-group"><label for="formMessage">Message</label><textarea id="formMessage" placeholder="Your message..." required></textarea><div class="form-error">Please enter a message.</div></div>
+          <button type="submit" class="btn btn-primary">Send Message</button>
+        </form>
+        <div class="contact-info reveal">
+          <div class="ci-item"><div class="ci-icon">✉</div><div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:2px">Email</div><a href="mailto:Jibaar21@gmail.com">Jibaar21@gmail.com</a></div></div>
+          <div class="ci-item"><div class="ci-icon">⌂</div><div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:2px">GitHub</div><a href="https://github.com/Ubdyjabaar">github.com/Ubdyjabaar</a></div></div>
+          <div class="ci-item"><div class="ci-icon">f</div><div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:2px">Facebook</div><a href="https://www.facebook.com/share/1EzRjM1whb/">facebook.com/Abdijabar</a></div></div>
+          <div class="ci-item"><div class="ci-icon">📍</div><div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:2px">Location</div><span>Mogadishu, Somalia</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Admin Upload (hidden by default, password-protected) -->
+  <section id="admin" style="padding:60px 0;display:none">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">🔒 Developer Admin</div>
+        <h2 class="section-title">Upload your app builds.</h2>
+        <p class="section-subtitle">Upload APK or EXE files. They'll be available for download immediately.</p>
+      </div>
+      <div class="upload-panel reveal" style="max-width:640px;margin:0 auto;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:32px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="grid-column:1/-1">
+            <label style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary);display:block;margin-bottom:6px">Platform</label>
+            <select id="uplPlatform" style="width:100%;padding:12px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-glass);color:var(--text);font-family:var(--font-body);font-size:14px;outline:none">
+              <option value="android">Android (APK)</option>
+              <option value="windows">Windows (EXE)</option>
+            </select>
+          </div>
+          <div style="grid-column:1/-1">
+            <label style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary);display:block;margin-bottom:6px">Version</label>
+            <input type="text" id="uplVersion" value="v1.0.0" style="width:100%;padding:12px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-glass);color:var(--text);font-family:var(--font-body);font-size:14px;outline:none">
+          </div>
+          <div style="grid-column:1/-1">
+            <label style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary);display:block;margin-bottom:6px">App File</label>
+            <div id="uplDrop" style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:24px;text-align:center;cursor:pointer;transition:border-color .3s;position:relative">
+              <input type="file" id="uplFile" style="position:absolute;inset:0;opacity:0;cursor:pointer">
+              <div style="font-size:28px;margin-bottom:6px">📦</div>
+              <div style="font-size:13px;color:var(--text-secondary)">Drop your file here or <span style="color:var(--primary);text-decoration:underline">browse</span></div>
+              <div id="uplFileName" style="font-size:12px;color:var(--primary);margin-top:6px"></div>
+            </div>
+          </div>
+          <div style="grid-column:1/-1;display:flex;gap:12px">
+            <button id="uplBtn" class="btn btn-primary">Upload Build</button>
+            <span id="uplStatus" style="font-size:13px;color:var(--text-secondary);align-self:center"></span>
+          </div>
+        </div>
+        <div id="uplList" style="margin-top:24px;border-top:1px solid var(--border);padding-top:16px">
+          <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary);margin-bottom:12px">Uploaded Builds</div>
+          <div id="uplItems"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="logo"><img src="assets/AT.png" alt="Abdijabar Tech" width="28" height="28" loading="lazy">Abdijabar Tech</a>
+          <p>Premium cross-platform calculator app built with passion and precision.</p>
+        </div>
+        <div><h5>Product</h5><a href="#features">Features</a><a href="#screenshots">Screenshots</a><a href="#downloads">Download</a><a href="#changelog">Changelog</a></div>
+        <div><h5>Support</h5><a href="#faq">FAQ</a><a href="#contact">Contact</a><a href="#">Privacy Policy</a><a href="#">Terms of Service</a></div>
+        <div><h5>Connect</h5><a href="https://github.com/Ubdyjabaar">GitHub</a><a href="https://www.facebook.com/share/1EzRjM1whb/">Facebook</a><a href="mailto:Jibaar21@gmail.com">Email</a></div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 Abdijabar Tech. All rights reserved.</span>
+        <div style="display:flex;align-items:center;gap:16px">
+          <button id="adminUnlockBtn" style="background:none;border:none;color:var(--text-tertiary);font-size:12px;cursor:pointer;padding:4px 8px;border-radius:4px;transition:color .3s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color=''" title="Developer Admin">🔒</button>
+          <div class="social-links">
+            <a href="https://github.com/Ubdyjabaar" aria-label="GitHub">⌂</a>
+            <a href="https://www.facebook.com/share/1EzRjM1whb/" aria-label="Facebook">f</a>
+            <a href="mailto:Jibaar21@gmail.com" aria-label="Email">✉</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+  <!-- Floating Download -->
+  <div class="float-dl" id="floatDl">
+    <span>Abdijabar Tech v3.2.0</span>
+    <a href="#downloads" class="btn btn-primary btn-sm">Download Free</a>
+  </div>
+
+  <!-- Notification -->
+  <div class="notification" id="notification">
+    <div class="notif-icon">✓</div>
+    <div class="notif-text">Download started<small>Your file will be ready shortly.</small></div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <button class="close-lb" id="lbClose">✕</button>
+    <button class="lb-nav lb-prev" id="lbPrev">←</button>
+    <img id="lbImg" src="" alt="Screenshot preview">
+    <button class="lb-nav lb-next" id="lbNext">→</button>
+  </div>
+
+  <script>
+    // --- Loader ---
+    window.addEventListener('load', () => {
+      setTimeout(() => document.getElementById('pageLoader').classList.add('hidden'), 400);
+    });
+
+    // --- Theme ---
+    const html = document.documentElement;
+    const themeBtn = document.getElementById('themeToggle');
+    function setTheme(t) {
+      html.setAttribute('data-theme', t);
+      themeBtn.textContent = t === 'dark' ? '🌙' : '☀️';
+      localStorage.setItem('abdijabartech-theme', t);
+    }
+    const savedTheme = localStorage.getItem('abdijabartech-theme');
+    setTheme(savedTheme || 'dark');
+    themeBtn.addEventListener('click', () => setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+
+    // --- Nav scroll ---
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+
+    // --- Hamburger ---
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    hamburger.addEventListener('click', () => navLinks.classList.toggle('open'));
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+    // --- Back to Top ---
+    const backBtn = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => backBtn.classList.toggle('visible', window.scrollY > 400));
+    backBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // --- Floating Download ---
+    const floatDl = document.getElementById('floatDl');
+    let floatShown = false;
+    window.addEventListener('scroll', () => {
+      if (!floatShown && window.scrollY > 600) { floatDl.classList.add('visible'); floatShown = true; }
+    });
+
+    // --- Reveal on scroll ---
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const delay = parseInt(entry.target.dataset.revealDelay) || 0;
+          setTimeout(() => entry.target.classList.add('visible'), delay);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // --- Spotlight effect on feature cards ---
+    document.querySelectorAll('.feature-card').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+        card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+      });
+    });
+
+    // --- Animated counters ---
+    const counterObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !entry.target.dataset.counted) {
+          entry.target.dataset.counted = 'true';
+          const target = entry.target.dataset.count;
+          const isDecimal = target.includes('.');
+          const targetNum = parseFloat(target);
+          const duration = 2000;
+          const start = performance.now();
+          const el = entry.target;
+          function update(now) {
+            const p = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - p, 3);
+            const val = eased * targetNum;
+            el.textContent = isDecimal ? val.toFixed(1) : Math.floor(val).toLocaleString();
+            if (p < 1) requestAnimationFrame(update);
+            else el.textContent = isDecimal ? target : parseInt(target).toLocaleString();
+          }
+          requestAnimationFrame(update);
+        }
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+
+    // --- IndexedDB for app files ---
+    const DB_NAME = 'AbdijabarTechDB';
+    const DB_VER = 1;
+    let db;
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VER);
+        req.onupgradeneeded = e => {
+          const d = e.target.result;
+          if (!d.objectStoreNames.contains('builds')) {
+            d.createObjectStore('builds', { keyPath: 'platform' });
+          }
+          if (!d.objectStoreNames.contains('downloads')) {
+            d.createObjectStore('downloads', { keyPath: 'platform' });
+          }
+        };
+        req.onsuccess = e => { db = e.target.result; resolve(db); };
+        req.onerror = e => reject(e);
+      });
+    }
+
+    async function getBuild(platform) {
+      await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('builds', 'readonly');
+        const req = tx.objectStore('builds').get(platform);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(null);
+      });
+    }
+
+    async function saveBuild(platform, data) {
+      await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('builds', 'readwrite');
+        const req = tx.objectStore('builds').put(data);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject();
+      });
+    }
+
+    async function getDlCount(platform) {
+      await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('downloads', 'readonly');
+        const req = tx.objectStore('downloads').get(platform);
+        req.onsuccess = () => resolve(req.result ? req.result.count : 0);
+        req.onerror = () => resolve(0);
+      });
+    }
+
+    async function incrementDl(platform) {
+      await openDB();
+      const count = await getDlCount(platform);
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('downloads', 'readwrite');
+        const req = tx.objectStore('downloads').put({ platform, count: count + 1 });
+        req.onsuccess = () => resolve(count + 1);
+        req.onerror = () => reject();
+      });
+    }
+
+    // GitHub Release download URLs (free, no size limit)
+    const repoOwner = 'Ubdyjabaar';
+    const repoName = 'Calculator';
+    const releaseTag = 'v1.0.0';
+    const ghBase = `https://github.com/${repoOwner}/${repoName}/releases/download/${releaseTag}`;
+
+    const staticFiles = {
+      android: {
+        path: `${ghBase}/app-release.apk`,
+        name: 'AbdijabarTech.apk',
+        size: '85.7 MB',
+      },
+      windows: {
+        path: `${ghBase}/AbdijabarTech_Windows.zip`,
+        name: 'AbdijabarTech_Windows.zip',
+        size: '14.1 MB',
+      },
+    };
+
+    async function refreshDownloadCards() {
+      const platforms = ['android', 'windows'];
+      for (const p of platforms) {
+        const build = await getBuild(p);
+        const count = await getDlCount(p);
+        const card = document.querySelector(`.download-card[data-platform="${p}"]`);
+        if (card) {
+          const sizeEl = card.querySelector('.dl-size');
+          const countEl = card.querySelector('.dl-count');
+          const btn = card.querySelector('.dl-btn');
+          if (build) {
+            sizeEl.textContent = build.size;
+            btn.textContent = `Download ${build.label}`;
+            btn.dataset.hasBuild = 'true';
+          } else {
+            sizeEl.textContent = staticFiles[p]?.size || 'Not uploaded';
+            btn.textContent = `Download ${p.charAt(0).toUpperCase() + p.slice(1)}`;
+          }
+          countEl.textContent = count.toLocaleString() + ' downloads';
+        }
+      }
+    }
+
+    document.querySelectorAll('.dl-btn').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        e.preventDefault();
+        const platform = btn.dataset.platform.toLowerCase();
+        const build = await getBuild(platform);
+        let blob, fileName;
+        if (build && build.data) {
+          const byteStr = atob(build.data.split(',')[1]);
+          const mime = build.data.split(',')[0].split(':')[1].split(';')[0];
+          const ab = new ArrayBuffer(byteStr.length);
+          const ia = new Uint8Array(ab);
+          for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
+          blob = new Blob([ab], { type: mime });
+          fileName = build.fileName;
+        } else if (staticFiles[platform]) {
+          const a = document.createElement('a');
+          a.href = staticFiles[platform].path;
+          a.download = staticFiles[platform].name;
+          a.target = '_blank';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          const newCount = await incrementDl(platform);
+          const countEl = document.querySelector(`[data-dl="${platform}"]`);
+          if (countEl) countEl.textContent = newCount.toLocaleString() + ' downloads';
+          showNotif(`${staticFiles[platform].name} download started`);
+          return;
+        } else {
+          const content = `Abdijabar Tech — ${platform.charAt(0).toUpperCase() + platform.slice(1)} Build\nVersion: 1.0.0\nPlatform: ${platform}\n\nThis is a placeholder file. Upload your real build via the admin panel (click 🔒 in footer).\n\nDownloaded: ${new Date().toISOString()}`;
+          blob = new Blob([content], { type: 'text/plain' });
+          fileName = staticFiles[platform]?.name || 'download.bin';
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        const newCount = await incrementDl(platform);
+        const countEl = document.querySelector(`[data-dl="${platform}"]`);
+        if (countEl) countEl.textContent = newCount.toLocaleString() + ' downloads';
+        showNotif(`${fileName} download started`);
+      });
+    });
+
+    function showNotif(msg, isError) {
+      const notif = document.getElementById('notification');
+      notif.querySelector('.notif-icon').textContent = isError ? '⚠️' : '✓';
+      notif.querySelector('.notif-text').innerHTML = isError ? msg : `Download started<small>${msg}</small>`;
+      notif.classList.add('show');
+      setTimeout(() => notif.classList.remove('show'), 3500);
+    }
+
+    // --- Upload handler ---
+    const uplFile = document.getElementById('uplFile');
+    const uplFileName = document.getElementById('uplFileName');
+    const uplDrop = document.getElementById('uplDrop');
+    const uplBtn = document.getElementById('uplBtn');
+    const uplStatus = document.getElementById('uplStatus');
+    const uplPlatform = document.getElementById('uplPlatform');
+    const uplVersion = document.getElementById('uplVersion');
+    const uplItems = document.getElementById('uplItems');
+
+    uplFile.addEventListener('change', () => {
+      if (uplFile.files.length > 0) {
+        const f = uplFile.files[0];
+        uplFileName.textContent = '📎 ' + f.name + ' (' + (f.size / 1048576).toFixed(1) + ' MB)';
+      }
+    });
+    uplDrop.addEventListener('dragover', e => { e.preventDefault(); uplDrop.style.borderColor = 'var(--primary)'; });
+    uplDrop.addEventListener('dragleave', () => { uplDrop.style.borderColor = ''; });
+    uplDrop.addEventListener('drop', e => {
+      e.preventDefault(); uplDrop.style.borderColor = '';
+      if (e.dataTransfer.files.length > 0) {
+        uplFile.files = e.dataTransfer.files;
+        const ev = new Event('change'); uplFile.dispatchEvent(ev);
+      }
+    });
+
+    uplBtn.addEventListener('click', async () => {
+      const file = uplFile.files[0];
+      const platform = uplPlatform.value;
+      const version = uplVersion.value.trim() || 'v1.0.0';
+      if (!file) { uplStatus.textContent = '⚠️ Please select a file'; return; }
+      const labelMap = { android: 'APK', windows: 'EXE' };
+      uplStatus.textContent = '⏳ Uploading...';
+      uplBtn.disabled = true;
+      const reader = new FileReader();
+      reader.onload = async function(ev) {
+        const build = {
+          platform,
+          label: labelMap[platform],
+          version,
+          fileName: file.name,
+          size: (file.size / 1048576).toFixed(1) + ' MB',
+          data: ev.target.result,
+          updated: new Date().toISOString()
+        };
+        await saveBuild(platform, build);
+        uplStatus.textContent = '✅ Uploaded successfully!';
+        uplBtn.disabled = false;
+        uplFile.value = ''; uplFileName.textContent = '';
+        refreshDownloadCards();
+        renderUploadList();
+        setTimeout(() => uplStatus.textContent = '', 2000);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    async function renderUploadList() {
+      const platforms = ['android', 'windows'];
+      const names = { android: 'Android', windows: 'Windows' };
+      const icons = { android: '🤖', windows: '🪟' };
+      let html = '';
+      for (const p of platforms) {
+        const build = await getBuild(p);
+        const count = await getDlCount(p);
+        html += `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:8px">
+          <span style="font-size:20px">${icons[p]}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:14px">${names[p]}</div>
+            <div style="font-size:12px;color:var(--text-tertiary)">${build ? build.version + ' · ' + build.fileName + ' · ' + build.size + ' · ' + count + ' downloads' : 'No build uploaded'}</div>
+          </div>
+          ${build ? `<button class="btn btn-glass btn-sm" onclick="deleteBuild('${p}')" style="color:var(--error)">✕</button>` : ''}
+        </div>`;
+      }
+      uplItems.innerHTML = html || '<div style="text-align:center;padding:20px;color:var(--text-tertiary);font-size:13px">No builds uploaded yet.</div>';
+    }
+
+    async function deleteBuild(platform) {
+      await openDB();
+      const tx = db.transaction('builds', 'readwrite');
+      tx.objectStore('builds').delete(platform);
+      tx.oncomplete = () => { refreshDownloadCards(); renderUploadList(); };
+    }
+
+    // Init
+    refreshDownloadCards();
+    renderUploadList();
+
+    // --- Testimonial carousel ---
+    const track = document.getElementById('testTrack');
+    const dots = document.getElementById('testDots');
+    const prevBtn = document.getElementById('testPrev');
+    const nextBtn = document.getElementById('testNext');
+    const cards = track.querySelectorAll('.testimonial-card');
+    let currentIdx = 0;
+    function getVisible() { return window.innerWidth < 640 ? 1 : window.innerWidth < 900 ? 2 : 3; }
+    function updateCarousel() {
+      const visible = getVisible();
+      const max = Math.max(0, cards.length - visible);
+      if (currentIdx > max) currentIdx = max;
+      const offset = currentIdx * (100 / visible);
+      track.style.transform = `translateX(-${offset}%)`;
+      dots.querySelectorAll('span').forEach((d, i) => d.classList.toggle('active', i === currentIdx));
+    }
+    cards.forEach((_, i) => { const d = document.createElement('span'); d.addEventListener('click', () => { currentIdx = i; updateCarousel(); }); dots.appendChild(d); });
+    prevBtn.addEventListener('click', () => { currentIdx = Math.max(0, currentIdx - 1); updateCarousel(); });
+    nextBtn.addEventListener('click', () => { currentIdx = Math.min(currentIdx + 1, cards.length - getVisible()); updateCarousel(); });
+    let autoTest = setInterval(() => { currentIdx = (currentIdx + 1) % Math.max(1, cards.length - getVisible() + 1); updateCarousel(); }, 4000);
+    document.querySelector('.testimonials').addEventListener('mouseenter', () => clearInterval(autoTest));
+    document.querySelector('.testimonials').addEventListener('mouseleave', () => autoTest = setInterval(() => { currentIdx = (currentIdx + 1) % Math.max(1, cards.length - getVisible() + 1); updateCarousel(); }, 4000));
+    window.addEventListener('resize', updateCarousel);
+    updateCarousel();
+
+    // --- FAQ accordion ---
+    document.querySelectorAll('.faq-question').forEach(q => {
+      q.addEventListener('click', () => {
+        const item = q.parentElement;
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+
+    // --- Contact form validation ---
+    document.getElementById('contactForm').addEventListener('submit', e => {
+      e.preventDefault();
+      let valid = true;
+      const fields = [
+        { id: 'formName', test: v => v.trim().length > 0 },
+        { id: 'formEmail', test: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+        { id: 'formSubject', test: v => v.trim().length > 0 },
+        { id: 'formMessage', test: v => v.trim().length > 0 }
+      ];
+      fields.forEach(f => {
+        const el = document.getElementById(f.id);
+        const group = el.closest('.form-group');
+        if (f.test(el.value)) { group.classList.remove('error'); }
+        else { group.classList.add('error'); valid = false; }
+      });
+      if (valid) {
+        const btn = document.querySelector('#contactForm .btn');
+        btn.textContent = '✓ Sent!';
+        btn.style.pointerEvents = 'none';
+        setTimeout(() => { btn.textContent = 'Send Message'; btn.style.pointerEvents = ''; document.getElementById('contactForm').reset(); }, 2500);
+      }
+    });
+    document.querySelectorAll('#contactForm input, #contactForm textarea').forEach(el => {
+      el.addEventListener('input', () => el.closest('.form-group').classList.remove('error'));
+    });
+
+    // --- Lightbox ---
+    const lightbox = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lbImg');
+    const lbClose = document.getElementById('lbClose');
+    const lbPrev = document.getElementById('lbPrev');
+    const lbNext = document.getElementById('lbNext');
+    let lbImages = [], lbCurrent = 0;
+    document.querySelectorAll('.ss-item').forEach((item, i) => {
+      item.addEventListener('click', () => {
+        lbImages = Array.from(document.querySelectorAll('.ss-item img')).map(img => img.src);
+        lbCurrent = i;
+        lbImg.src = lbImages[i];
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+    function lbNav(dir) {
+      lbCurrent = (lbCurrent + dir + lbImages.length) % lbImages.length;
+      lbImg.src = lbImages[lbCurrent];
+    }
+    lbClose.addEventListener('click', () => { lightbox.classList.remove('active'); document.body.style.overflow = ''; });
+    lbPrev.addEventListener('click', () => lbNav(-1));
+    lbNext.addEventListener('click', () => lbNav(1));
+    lightbox.addEventListener('click', e => { if (e.target === lightbox) { lightbox.classList.remove('active'); document.body.style.overflow = ''; } });
+    document.addEventListener('keydown', e => {
+      if (!lightbox.classList.contains('active')) return;
+      if (e.key === 'Escape') { lightbox.classList.remove('active'); document.body.style.overflow = ''; }
+      if (e.key === 'ArrowLeft') lbNav(-1);
+      if (e.key === 'ArrowRight') lbNav(1);
+    });
+
+    // --- Admin unlock (password protected) ---
+    const ADMIN_PASSWORD = 'abdijabar123';
+    const adminSection = document.getElementById('admin');
+    const unlockBtn = document.getElementById('adminUnlockBtn');
+
+    if (sessionStorage.getItem('abdijabar-admin') === 'true') {
+      adminSection.style.display = '';
+    }
+
+    unlockBtn.addEventListener('click', () => {
+      if (sessionStorage.getItem('abdijabar-admin') === 'true') {
+        adminSection.style.display = adminSection.style.display === 'none' ? '' : 'none';
+        return;
+      }
+      const pwd = prompt('Enter admin password to manage builds:');
+      if (pwd === ADMIN_PASSWORD) {
+        sessionStorage.setItem('abdijabar-admin', 'true');
+        adminSection.style.display = '';
+        showNotif('Admin panel unlocked', false);
+        refreshDownloadCards();
+        renderUploadList();
+      } else if (pwd !== null) {
+        alert('Incorrect password.');
+      }
+    });
+
+    console.log('%c Abdijabar Tech v3.2.0 ', 'background:#6366f1;color:#fff;font-weight:700;padding:4px 8px;border-radius:4px;font-size:14px');
+    console.log('Built with passion by Abdijabar.');
+    console.log('%c🔒 Admin panel: click the lock icon in the footer', 'color:#9492a6;font-size:12px');
+  </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+name: calculator
+description: "Calculator - Next-Gen Glassmorphism Calculator"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  provider: ^6.1.2
+  shared_preferences: ^2.3.4
+  sqflite: ^2.4.1
+  path_provider: ^2.1.5
+  path: ^1.9.1
+  collection: ^1.19.1
+  image_picker: ^1.1.2
+  google_mlkit_text_recognition: ^0.14.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
+  image: ^4.5.4
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  web:
+    generate: true
+  image_path: "assets/icon/screen.png"
+  adaptive_icon_background: "#0F172A"
+  adaptive_icon_foreground: "assets/icon/screen.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icon/

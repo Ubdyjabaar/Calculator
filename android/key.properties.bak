@@ -1,0 +1,4 @@
+storePassword=abdijabar
+keyPassword=abdijabar
+keyAlias=release
+storeFile=release-key.jks

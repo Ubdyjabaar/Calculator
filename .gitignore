@@ -1,0 +1,17 @@
+*.iml
+.idea/
+.pub/
+.buildlog/
+.vscode/
+*.lock
+*.class
+*.log
+*.swp
+*.jks
+build/
+android/.gradle/
+android/local.properties
+android/key.properties
+android/app/release-key.jks
+downloads/
+flutter_*
