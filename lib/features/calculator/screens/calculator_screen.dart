@@ -11,6 +11,7 @@ import '../../history/screens/history_screen.dart';
 import '../../../shared/widgets/settings_panel.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/responsive_wrapper.dart';
+import '../../converter/screens/converter_screen.dart';
 
 class CalculatorScreen extends StatelessWidget {
   const CalculatorScreen({super.key});
@@ -96,6 +97,11 @@ class CalculatorScreen extends StatelessWidget {
               selectedIcon: Icon(Icons.show_chart),
               label: 'Graphing',
             ),
+            NavigationDestination(
+              icon: Icon(Icons.swap_horiz_outlined),
+              selectedIcon: Icon(Icons.swap_horiz),
+              label: 'Convert',
+            ),
           ],
         );
       },
@@ -126,6 +132,8 @@ class CalculatorScreen extends StatelessWidget {
         return _buildCalculatorLayout(context, calc, showScientific: true);
       case CalculatorMode.graphing:
         return _buildGraphingLayout(context, calc);
+      case CalculatorMode.converter:
+        return const ConverterScreen();
     }
   }
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/utils/expression_parser.dart';
 import '../../history/providers/history_provider.dart';
 
-enum CalculatorMode { standard, scientific, graphing }
+enum CalculatorMode { standard, scientific, graphing, converter }
 
 class CalculatorProvider extends ChangeNotifier {
   CalculatorMode _mode = CalculatorMode.standard;

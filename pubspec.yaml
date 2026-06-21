@@ -18,6 +18,8 @@ dependencies:
   collection: ^1.19.1
   image_picker: ^1.1.2
   google_mlkit_text_recognition: ^0.14.0
+  flutter_bloc: ^9.1.1
+
 
 dev_dependencies:
   flutter_test:
@@ -25,6 +27,8 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.3
   image: ^4.5.4
+
+
 
 flutter_launcher_icons:
   android: true

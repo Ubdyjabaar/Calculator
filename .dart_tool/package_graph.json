@@ -10,6 +10,7 @@
         "collection",
         "cupertino_icons",
         "flutter",
+        "flutter_bloc",
         "google_mlkit_text_recognition",
         "image_picker",
         "path",
@@ -69,6 +70,15 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "flutter_bloc",
+      "version": "9.1.1",
+      "dependencies": [
+        "bloc",
+        "flutter",
+        "provider"
       ]
     },
     {
@@ -851,6 +861,13 @@
       "version": "3.0.7",
       "dependencies": [
         "typed_data"
+      ]
+    },
+    {
+      "name": "bloc",
+      "version": "9.2.1",
+      "dependencies": [
+        "meta"
       ]
     }
   ],
