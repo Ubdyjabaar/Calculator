@@ -36,9 +36,9 @@ flutter_launcher_icons:
   ios: true
   web:
     generate: true
-  image_path: "assets/icon/screen.png"
+  image_path: "assets/icon/new_icon.png"
   adaptive_icon_background: "#0F172A"
-  adaptive_icon_foreground: "assets/icon/screen.png"
+  adaptive_icon_foreground: "assets/icon/new_icon.png"
 
 flutter:
   uses-material-design: true
