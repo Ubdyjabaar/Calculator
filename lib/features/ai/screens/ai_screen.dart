@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/ai_provider.dart';
 import '../../../shared/widgets/glass_container.dart';
-import '../../../core/constants/app_constants.dart';
 
 class AIScreen extends StatefulWidget {
   const AIScreen({super.key});
@@ -50,11 +49,6 @@ class _AIScreenState extends State<AIScreen> {
       appBar: AppBar(
         title: const Text('AI Math Solver'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'API Key',
-            onPressed: () => _showApiKeyDialog(context, prov),
-          ),
           if (prov.messages.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_outline),
@@ -65,27 +59,6 @@ class _AIScreenState extends State<AIScreen> {
       ),
       body: Column(
         children: [
-          if (prov.apiKey.isEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Colors.orange.withValues(alpha: 0.15),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning_amber, color: Colors.orange, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Tap ⚙ to set your Gemini API key',
-                      style: TextStyle(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           Expanded(
             child: prov.messages.isEmpty
                 ? _buildEmptyState(theme)
@@ -132,7 +105,7 @@ class _AIScreenState extends State<AIScreen> {
                 )),
             const SizedBox(height: 8),
             Text(
-              'Solve equations, simplify expressions,\nlearn step-by-step solutions.',
+              'Solve equations, derive, integrate,\nsimplify expressions, and more.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -190,45 +163,6 @@ class _AIScreenState extends State<AIScreen> {
     );
   }
 
-  Future<void> _showApiKeyDialog(BuildContext context, AIProvider prov) {
-    final ctrl = TextEditingController(text: prov.apiKey);
-    return showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Gemini API Key'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Get a free API key at aistudio.google.com/apikey',
-              style: TextStyle(fontSize: 13),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: ctrl,
-              decoration: const InputDecoration(
-                labelText: 'API Key',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              prov.setApiKey(ctrl.text.trim());
-              Navigator.pop(ctx);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _MessageBubble extends StatelessWidget {
