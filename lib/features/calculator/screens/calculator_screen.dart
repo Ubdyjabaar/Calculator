@@ -12,6 +12,7 @@ import '../../../shared/widgets/settings_panel.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/responsive_wrapper.dart';
 import '../../converter/screens/converter_screen.dart';
+import '../../ai/screens/ai_screen.dart';
 
 class CalculatorScreen extends StatelessWidget {
   const CalculatorScreen({super.key});
@@ -61,6 +62,11 @@ class CalculatorScreen extends StatelessWidget {
             icon: const Icon(Icons.history),
             onPressed: () => _showHistory(context),
             tooltip: 'History',
+          ),
+          IconButton(
+            icon: const Icon(Icons.auto_awesome),
+            onPressed: () => _openAI(context),
+            tooltip: 'AI Math Solver',
           ),
         ],
       ),
@@ -225,6 +231,14 @@ class CalculatorScreen extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const ScanScreen(),
+      ),
+    );
+  }
+
+  void _openAI(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AIScreen(),
       ),
     );
   }

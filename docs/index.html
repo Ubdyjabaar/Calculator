@@ -430,6 +430,7 @@
         <p class="section-subtitle">We ship frequently. Here's what's new.</p>
       </div>
       <div class="timeline">
+        <div class="timeline-item reveal"><div class="tl-version">v1.2.0</div><div class="tl-date">June 22, 2026</div><div class="tl-content"><h4>AI Math Solver + Trig Notation Fix</h4><ul><li>Ask Gemini AI to solve any math problem step-by-step</li><li>cos²t + sin²t = 1 now works correctly</li><li>Supports sin^2x, cos^2(x), and superscript notation (sin²x, cos²x)</li><li class="fix">Requires free Gemini API key from aistudio.google.com</li></ul></div></div>
         <div class="timeline-item reveal"><div class="tl-version">v1.1.0</div><div class="tl-date">June 22, 2026</div><div class="tl-content"><h4>Unit Converter + Tip Calculator</h4><ul><li>Length: mm, cm, m, km, inches, feet, yards, miles</li><li>Area, Temperature, Volume, Mass, Data, Speed, Time</li><li>Tip calculator: split bills with custom %</li><li class="fix">Intuitive swap button for From/To units</li></ul></div></div>
         <div class="timeline-item reveal"><div class="tl-version">v3.2.0</div><div class="tl-date">June 12, 2026</div><div class="tl-content"><h4>AI-Powered Graphing</h4><ul><li>On-device ML equation solver</li><li>Interactive 3D graphing engine</li><li>Real-time collaboration sync</li><li class="fix">Improved accessibility support</li><li class="fix">Battery usage optimization</li></ul></div></div>
         <div class="timeline-item reveal"><div class="tl-version">v3.1.0</div><div class="tl-date">May 28, 2026</div><div class="tl-content"><h4>Dark Mode Redesign</h4><ul><li>Completely revamped dark theme</li><li>Custom theme builder</li><li>iPad split-view support</li><li class="fix">Fixed history sync race condition</li><li class="fix">Keyboard shortcut improvements</li></ul></div></div>
@@ -774,17 +775,17 @@
     // GitHub Release download URLs (free, no size limit)
     const repoOwner = 'Ubdyjabaar';
     const repoName = 'Calculator';
-    const releaseTag = 'v1.1.0';
+    const releaseTag = 'v1.2.0';
     const ghBase = `https://github.com/${repoOwner}/${repoName}/releases/download/${releaseTag}`;
 
     const staticFiles = {
       android: {
-        path: `${ghBase}/AbdijabarTech_Calculator_v1.1.0.apk`,
-        name: 'AbdijabarTech_Calculator_v1.1.0.apk',
-        size: '85.3 MB',
+        path: `${ghBase}/AbdijabarTech_v1.2.0.apk`,
+        name: 'AbdijabarTech_v1.2.0.apk',
+        size: '86.7 MB',
       },
       windows: {
-        path: `${ghBase}/AbdijabarTech_Windows_v1.1.0.zip`,
+        path: `https://github.com/${repoOwner}/${repoName}/releases/download/v1.1.0/AbdijabarTech_Windows_v1.1.0.zip`,
         name: 'AbdijabarTech_Windows_v1.1.0.zip',
         size: '14.1 MB',
       },

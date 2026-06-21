@@ -4,6 +4,7 @@ enum _TokenType {
   number,
   operator_,
   function,
+  functionPower,
   constant,
   variable,
   leftParen,
@@ -47,7 +48,10 @@ class ExpressionParser {
       return _solveEquation(expression, degrees: degrees);
     }
 
-    String expr = _insertImplicitMultiplication(expression);
+    String expr = expression
+        .replaceAll('²', '^2')
+        .replaceAll('³', '^3');
+    expr = _insertImplicitMultiplication(expr);
     final tokens = _tokenize(expr);
     final postfix = _toPostfix(tokens);
     return _evaluatePostfix(postfix, degrees: degrees, variables: variables);
@@ -60,8 +64,9 @@ class ExpressionParser {
     final parts = equation.split('=');
     if (parts.length != 2) throw FormatException('Invalid equation');
 
-    final leftExpr = _insertImplicitMultiplication(parts[0].trim());
-    final rightExpr = _insertImplicitMultiplication(parts[1].trim());
+    String clean(String s) => _insertImplicitMultiplication(s.replaceAll('²', '^2').replaceAll('³', '^3'));
+    final leftExpr = clean(parts[0].trim());
+    final rightExpr = clean(parts[1].trim());
 
     if (leftExpr.isEmpty || rightExpr.isEmpty) {
       throw FormatException('Invalid equation');
@@ -200,6 +205,28 @@ class ExpressionParser {
         }
         final word = expr.substring(start, i);
         if (_functions.contains(word)) {
+          int la = i;
+          while (la < expr.length && expr[la] == ' ') la++;
+          if (la < expr.length && expr[la] == '^') {
+            int expStart = la + 1;
+            int expEnd = expStart;
+            while (expEnd < expr.length && (_isDigit(expr[expEnd]) || '²³' .contains(expr[expEnd]))) {
+              expEnd++;
+            }
+            if (expStart < expEnd) {
+              int afterExp = expEnd;
+              while (afterExp < expr.length && expr[afterExp] == ' ') afterExp++;
+              if (afterExp < expr.length && (expr[afterExp] == '(' || _isLetter(expr[afterExp]))) {
+                String exp = expr.substring(expStart, expEnd)
+                    .replaceAll('²', '2')
+                    .replaceAll('³', '3');
+                tokens.add(_Token('$word^$exp', _TokenType.functionPower));
+                i = afterExp;
+                expectOperand = true;
+                continue;
+              }
+            }
+          }
           tokens.add(_Token(word, _TokenType.function));
           expectOperand = true;
         } else if (word == 'e') {
@@ -265,6 +292,7 @@ class ExpressionParser {
           break;
 
         case _TokenType.function:
+        case _TokenType.functionPower:
           opStack.add(token);
           break;
 
@@ -295,7 +323,9 @@ class ExpressionParser {
           if (opStack.isNotEmpty && opStack.last.type == _TokenType.leftParen) {
             opStack.removeLast();
           }
-          if (opStack.isNotEmpty && opStack.last.type == _TokenType.function) {
+          if (opStack.isNotEmpty &&
+              (opStack.last.type == _TokenType.function ||
+               opStack.last.type == _TokenType.functionPower)) {
             output.add(opStack.removeLast());
           }
           break;
@@ -355,53 +385,62 @@ class ExpressionParser {
           }
           break;
         case _TokenType.function:
+        case _TokenType.functionPower:
           if (stack.isEmpty) throw FormatException('Insufficient operands');
           final arg = stack.removeLast();
           double processedArg = arg;
-          if (degrees && ['sin', 'cos', 'tan'].contains(token.value)) {
+          final parts = token.value.split('^');
+          final func = parts[0];
+          final exponent = parts.length > 1 ? int.parse(parts[1]) : 1;
+          if (degrees && ['sin', 'cos', 'tan'].contains(func)) {
             processedArg = arg * pi / 180.0;
           }
-          switch (token.value) {
+          double result;
+          switch (func) {
             case 'sin':
-              stack.add(sin(processedArg));
+              result = sin(processedArg);
               break;
             case 'cos':
-              stack.add(cos(processedArg));
+              result = cos(processedArg);
               break;
             case 'tan':
-              stack.add(tan(processedArg));
+              result = tan(processedArg);
               break;
             case 'log':
-              stack.add(log(processedArg) / ln10);
+              result = log(processedArg) / ln10;
               break;
             case 'ln':
-              stack.add(log(processedArg));
+              result = log(processedArg);
               break;
             case 'sqrt':
               if (processedArg < 0) {
                 throw FormatException('Square root of negative number');
               }
-              stack.add(sqrt(processedArg));
+              result = sqrt(processedArg);
               break;
             case 'asin':
               if (processedArg < -1 || processedArg > 1) {
                 throw FormatException('asin domain error');
               }
               final r = asin(processedArg);
-              stack.add(degrees ? r * 180.0 / pi : r);
+              result = degrees ? r * 180.0 / pi : r;
               break;
             case 'acos':
               if (processedArg < -1 || processedArg > 1) {
                 throw FormatException('acos domain error');
               }
               final r = acos(processedArg);
-              stack.add(degrees ? r * 180.0 / pi : r);
+              result = degrees ? r * 180.0 / pi : r;
               break;
             case 'atan':
               final r = atan(processedArg);
-              stack.add(degrees ? r * 180.0 / pi : r);
+              result = degrees ? r * 180.0 / pi : r;
               break;
+            default:
+              result = 0;
           }
+          if (exponent > 1) result = pow(result, exponent).toDouble();
+          stack.add(result);
           break;
         case _TokenType.leftParen:
         case _TokenType.rightParen:

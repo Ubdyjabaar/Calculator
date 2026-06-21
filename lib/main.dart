@@ -6,6 +6,7 @@ import 'features/calculator/providers/calculator_provider.dart';
 import 'features/history/providers/history_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
 import 'features/converter/providers/converter_provider.dart';
+import 'features/ai/providers/ai_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +32,7 @@ void main() {
           update: (_, history, calc) => calc!..setHistoryProvider(history),
         ),
         ChangeNotifierProvider(create: (_) => ConverterProvider()),
+        ChangeNotifierProvider(create: (_) => AIProvider()),
       ],
       child: const NexaCalcApp(),
     ),
