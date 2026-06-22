@@ -1,27 +1,31 @@
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:http/http.dart' as http;
+import '../core/config/ai_config.dart';
 
 class AIService {
-  static const String _mathjsUrl = 'http://api.mathjs.org/v4/';
+  static String? _cachedUrl;
 
   static Future<String> solveMathProblem(String query) async {
+    // Ensure config is loaded
+    await AIConfig.getKeywords('help');
+
     final trimmed = query.trim();
-    if (trimmed.isEmpty) return 'Please enter a problem.';
+    if (trimmed.isEmpty) return await AIConfig.getMessage('empty');
 
     final lower = trimmed.toLowerCase();
 
-    if (_matches(lower, ['help', 'what can you do', 'commands', 'suggestions'])) {
-      return _helpText();
+    if (await _matchesConfig(lower, 'help')) {
+      return await AIConfig.getMessage('help');
     }
 
-    if (_matches(lower, ['derivative of', 'derive', 'differentiate', 'd/dx', 'ddx', 'find the derivative'])) {
-      final expr = _extractAfter(trimmed, ['derivative of', 'derive', 'differentiate', 'd/dx', 'ddx', 'find the derivative']);
+    if (await _matchesConfig(lower, 'derivative')) {
+      final expr = _extractAfter(trimmed, await AIConfig.getKeywords('derivative'));
       if (expr.isNotEmpty) return await _handleDerivative(expr);
     }
 
-    if (_matches(lower, ['integral of', 'integrate', 'antiderivative', 'find the integral', 'indefinite integral', '∫'])) {
-      final expr = _extractAfter(trimmed, ['integral of', 'integrate', 'antiderivative', 'find the integral', 'indefinite integral', '∫']);
+    if (await _matchesConfig(lower, 'integral')) {
+      final expr = _extractAfter(trimmed, await AIConfig.getKeywords('integral'));
       if (expr.isNotEmpty) return await _handleIntegral(expr);
     }
 
@@ -33,23 +37,27 @@ class AIService {
         }
       } else {
         final expr = _extractAfter(trimmed, ['solve']);
-        if (expr.isNotEmpty) {
-          return await _handleSolve(expr, null, null);
-        }
+        if (expr.isNotEmpty) return await _handleSolve(expr, null, null);
       }
     }
 
-    if (_matches(lower, ['simplify', 'expand'])) {
-      final expr = _extractAfter(trimmed, ['simplify', 'expand']);
+    if (await _matchesConfig(lower, 'simplify')) {
+      final expr = _extractAfter(trimmed, await AIConfig.getKeywords('simplify'));
       if (expr.isNotEmpty) return await _handleSimplify(expr);
     }
 
-    if (_matches(lower, ['factor', 'factorise', 'factorize'])) {
-      final expr = _extractAfter(trimmed, ['factor', 'factorise', 'factorize']);
+    if (await _matchesConfig(lower, 'factor')) {
+      final expr = _extractAfter(trimmed, await AIConfig.getKeywords('factor'));
       if (expr.isNotEmpty) return await _handleFactor(expr);
     }
 
     return await _handleEvaluate(trimmed);
+  }
+
+  static Future<String> _getMathjsUrl() async {
+    if (_cachedUrl != null) return _cachedUrl!;
+    _cachedUrl = await AIConfig.getApiUrl();
+    return _cachedUrl!;
   }
 
   static Future<String> _handleDerivative(String expr) async {
@@ -57,7 +65,8 @@ class AIService {
     final result = await _mathjs('simplify(derivative(\'$cleaned\',\'x\'))');
     if (result == null || result.startsWith('Error')) {
       final err = await _mathjsRaw('simplify(derivative(\'$cleaned\',\'x\'))');
-      return 'Math Error: ${err ?? "Could not compute derivative."}';
+      final template = await AIConfig.getMessage('math_error');
+      return template.replaceAll('{error}', err ?? 'Could not compute derivative.');
     }
 
     final buf = StringBuffer()
@@ -71,7 +80,6 @@ class AIService {
     }
     buf.writeln();
 
-    // Try term-by-term
     final terms = _splitTerms(cleaned);
     if (terms.length > 1) {
       buf.writeln('Step 2: Differentiate each term:');
@@ -94,7 +102,8 @@ class AIService {
     final result = await _mathjs('integrate($cleaned,x)');
     if (result == null || result.startsWith('Error')) {
       final err = await _mathjsRaw('integrate($cleaned,x)');
-      return 'Math Error: ${err ?? "Could not compute integral."}';
+      final template = await AIConfig.getMessage('math_error');
+      return template.replaceAll('{error}', err ?? 'Could not compute integral.');
     }
 
     final buf = StringBuffer()
@@ -139,7 +148,6 @@ class AIService {
       ..writeln('Equation: ${lhs != null ? "$lhs = $rhs" : "$combined = 0"}')
       ..writeln();
 
-    // Try factoring
     final factored = await _mathjs('factor($combined)');
     if (factored != null && !factored.startsWith('Error') && factored != _cleanExpr(combined)) {
       buf.writeln('Step 1: Factor the expression');
@@ -147,7 +155,6 @@ class AIService {
       buf.writeln();
     }
 
-    // Try quadratic formula
     final isQuad = await _isQuadratic(combined);
     if (isQuad) {
       final coeffs = await _extractQuadraticCoeffs(combined);
@@ -199,7 +206,7 @@ class AIService {
       }
     }
 
-    // Try polynomial root finding for degree >= 3
+    // Polynomial root finding for degree >= 3
     final degree = _detectDegree(combined);
     if (degree >= 3) {
       final coeffs = await _extractPolyCoeffs(combined, degree);
@@ -214,7 +221,6 @@ class AIService {
       }
     }
 
-    // Fallback: use solve
     final roots = await _mathjs('solve($combined,x)');
     if (roots != null && !roots.startsWith('Error')) {
       buf.writeln('Solution:');
@@ -223,7 +229,8 @@ class AIService {
     }
 
     final err = await _mathjsRaw('solve($combined,x)');
-    return 'Math Error: ${err ?? "Could not solve equation."}';
+    final template = await AIConfig.getMessage('math_error');
+    return template.replaceAll('{error}', err ?? 'Could not solve equation.');
   }
 
   static Future<String> _handleSimplify(String expr) async {
@@ -231,7 +238,8 @@ class AIService {
     final result = await _mathjs('simplify($cleaned)');
     if (result == null || result.startsWith('Error')) {
       final err = await _mathjsRaw('simplify($cleaned)');
-      return 'Math Error: ${err ?? "Could not simplify."}';
+      final template = await AIConfig.getMessage('math_error');
+      return template.replaceAll('{error}', err ?? 'Could not simplify.');
     }
 
     final buf = StringBuffer()
@@ -259,7 +267,8 @@ class AIService {
     final result = await _mathjs('factor($cleaned)');
     if (result == null || result.startsWith('Error')) {
       final err = await _mathjsRaw('factor($cleaned)');
-      return 'Math Error: ${err ?? "Could not factor."}';
+      final template = await AIConfig.getMessage('math_error');
+      return template.replaceAll('{error}', err ?? 'Could not factor.');
     }
 
     final buf = StringBuffer()
@@ -268,7 +277,6 @@ class AIService {
       ..writeln('Expression: $cleaned')
       ..writeln();
 
-    // Check for difference of squares
     if (cleaned.contains('^2') && !cleaned.contains('+') && !cleaned.contains('(')) {
       final parts = cleaned.split(RegExp(r'\s*-\s*'));
       if (parts.length == 2) {
@@ -285,7 +293,7 @@ class AIService {
 
   static Future<String> _handleEvaluate(String expr) async {
     final cleaned = _cleanExpr(expr);
-    if (cleaned.isEmpty) return _helpText();
+    if (cleaned.isEmpty) return await AIConfig.getMessage('help');
 
     final result = await _mathjs(cleaned);
     if (result != null) return '$cleaned\n  = $result';
@@ -297,8 +305,16 @@ class AIService {
     }
 
     final err = await _mathjsRaw(cleaned);
-    if (err != null) return 'Math Error: $err';
-    return _helpText();
+    if (err != null) {
+      final template = await AIConfig.getMessage('math_error');
+      return template.replaceAll('{error}', err);
+    }
+    return await AIConfig.getMessage('help');
+  }
+
+  static Future<bool> _matchesConfig(String lower, String configKey) async {
+    final keywords = await AIConfig.getKeywords(configKey);
+    return keywords.any((k) => lower.contains(k));
   }
 
   static List<String> _splitTerms(String expr) {
@@ -325,9 +341,7 @@ class AIService {
   }
 
   static Future<bool> _isQuadratic(String expr) async {
-    // Check if expression contains x^2 term
     if (!expr.contains('^2')) return false;
-    // Try evaluating derivative to see if result is linear
     final result = await _mathjs('derivative(\'$expr\',\'x\')');
     if (result == null || result.startsWith('Error')) return false;
     final second = await _mathjs('derivative(\'$result\',\'x\')');
@@ -335,11 +349,6 @@ class AIService {
   }
 
   static Future<Map<String, double>?> _extractQuadraticCoeffs(String expr) async {
-    // Evaluate at x=0, x=1, x=-1 to find a,b,c
-    // f(x) = ax² + bx + c
-    // f(0) = c
-    // f(1) = a + b + c
-    // f(-1) = a - b + c
     try {
       final c = double.tryParse(await _evaluateAt(expr, 0) ?? '') ?? 0;
       final f1 = double.tryParse(await _evaluateAt(expr, 1) ?? '') ?? 0;
@@ -415,13 +424,12 @@ class AIService {
 
   static Future<String?> _mathjs(String expr) async {
     try {
-      final uri = Uri.parse('$_mathjsUrl?expr=${Uri.encodeComponent(expr)}');
+      final url = await _getMathjsUrl();
+      final uri = Uri.parse('$url?expr=${Uri.encodeComponent(expr)}');
       final response = await http.get(uri).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final text = response.body.trim();
-        if (text.isNotEmpty && !text.startsWith('Error')) {
-          return text;
-        }
+        if (text.isNotEmpty && !text.startsWith('Error')) return text;
       }
       return null;
     } catch (_) {
@@ -431,21 +439,16 @@ class AIService {
 
   static Future<String?> _mathjsRaw(String expr) async {
     try {
-      final uri = Uri.parse('$_mathjsUrl?expr=${Uri.encodeComponent(expr)}');
+      final url = await _getMathjsUrl();
+      final uri = Uri.parse('$url?expr=${Uri.encodeComponent(expr)}');
       final response = await http.get(uri).timeout(const Duration(seconds: 10));
-      if (response.statusCode == 200) {
-        return response.body.trim();
-      }
+      if (response.statusCode == 200) return response.body.trim();
       final body = response.body.trim();
       if (body.isNotEmpty) return body;
       return 'HTTP ${response.statusCode}';
     } catch (e) {
       return '$e';
     }
-  }
-
-  static bool _matches(String lower, List<String> keywords) {
-    return keywords.any((k) => lower.contains(k));
   }
 
   static String _extractAfter(String text, List<String> prefixes) {
@@ -465,18 +468,5 @@ class AIService {
         .replaceAll(RegExp(r'^[,\s.:;!?]+'), '')
         .replaceAll(RegExp(r'[,\s.:;!?]+$'), '')
         .trim();
-  }
-
-  static String _helpText() {
-    return 'I can solve any math problem step by step!\n\n'
-        'Try:\n'
-        '  • "2 + 2" or "3 * 7"\n'
-        '  • "sin(45)^2 + cos(45)^2"\n'
-        '  • "derivative of x^3 + 2x^2"\n'
-        '  • "integrate 2x + 1"\n'
-        '  • "solve x^2 - 5x + 6 = 0"\n'
-        '  • "simplify (x+1)(x-1)"\n'
-        '  • "factor x^2 - 4"\n'
-        '  • Any math expression!';
   }
 }

@@ -45,3 +45,4 @@ flutter:
   assets:
     - assets/icon/
     - assets/splash_icon.png
+    - assets/config/ai_rules.json

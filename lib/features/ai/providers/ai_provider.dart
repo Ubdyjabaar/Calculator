@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../services/ai_service.dart';
+import '../../../core/config/ai_config.dart';
 
 class AIMessage {
   final String role;
@@ -39,7 +40,8 @@ class AIProvider extends ChangeNotifier {
     } catch (e) {
       _loading = false;
       notifyListeners();
-      addMessage(AIMessage(role: 'model', text: 'Connection error. Please check your internet and try again.'));
+      final errMsg = await AIConfig.getMessage('connection_error');
+      addMessage(AIMessage(role: 'model', text: errMsg.isNotEmpty ? errMsg : 'Connection error. Please check your internet and try again.'));
     }
   }
 
@@ -57,7 +59,8 @@ class AIProvider extends ChangeNotifier {
     } catch (e) {
       _loading = false;
       notifyListeners();
-      addMessage(AIMessage(role: 'model', text: 'Connection error. Please check your internet and try again.'));
+      final errMsg = await AIConfig.getMessage('connection_error');
+      addMessage(AIMessage(role: 'model', text: errMsg.isNotEmpty ? errMsg : 'Connection error. Please check your internet and try again.'));
     }
   }
 
