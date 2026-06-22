@@ -293,17 +293,10 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   Widget _appBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      child: Row(
-        children: [
-          IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.of(context).pop()),
-          const Spacer(),
-          Text('Scan & Solve', style: Theme.of(context).appBarTheme.titleTextStyle),
-          const Spacer(),
-          const SizedBox(width: 48),
-        ],
-      ),
+    return AppBar(
+      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.of(context).pop()),
+      title: const Text('Scan & Solve'),
+      centerTitle: true,
     );
   }
 

@@ -48,6 +48,7 @@ class _AIScreenState extends State<AIScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('AI Math Solver'),
+        centerTitle: true,
         actions: [
           if (prov.messages.isNotEmpty)
             IconButton(
