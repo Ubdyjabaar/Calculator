@@ -32,10 +32,33 @@ class AIProvider extends ChangeNotifier {
     _loading = true;
     notifyListeners();
 
-    final reply = await AIService.solveMathProblem(text.trim());
+    try {
+      final reply = await AIService.solveMathProblem(text.trim());
+      _loading = false;
+      addMessage(AIMessage(role: 'model', text: reply));
+    } catch (e) {
+      _loading = false;
+      notifyListeners();
+      addMessage(AIMessage(role: 'model', text: 'Connection error. Please check your internet and try again.'));
+    }
+  }
 
-    _loading = false;
-    addMessage(AIMessage(role: 'model', text: reply));
+  Future<void> sendMessageWithImage(String text, String imagePath) async {
+    final msg = text.trim();
+    final displayText = msg.isNotEmpty ? '$msg\n[Image scanned]' : '[Image scanned]';
+    addMessage(AIMessage(role: 'user', text: displayText));
+    _loading = true;
+    notifyListeners();
+
+    try {
+      final reply = await AIService.solveMathProblem(msg);
+      _loading = false;
+      addMessage(AIMessage(role: 'model', text: reply));
+    } catch (e) {
+      _loading = false;
+      notifyListeners();
+      addMessage(AIMessage(role: 'model', text: 'Connection error. Please check your internet and try again.'));
+    }
   }
 
   void clearMessages() {
