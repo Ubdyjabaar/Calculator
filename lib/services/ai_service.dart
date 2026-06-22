@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 
 class AIService {
@@ -198,6 +199,21 @@ class AIService {
       }
     }
 
+    // Try polynomial root finding for degree >= 3
+    final degree = _detectDegree(combined);
+    if (degree >= 3) {
+      final coeffs = await _extractPolyCoeffs(combined, degree);
+      if (coeffs != null && coeffs.length == degree + 1) {
+        final rootsResult = await _mathjs('roots([${coeffs.join(',')}])');
+        if (rootsResult != null && !rootsResult.startsWith('Error')) {
+          buf.writeln('Step: Find all roots numerically');
+          buf.writeln('  Polynomial degree: $degree');
+          buf.writeln('  Roots: $rootsResult');
+          return buf.toString();
+        }
+      }
+    }
+
     // Fallback: use solve
     final roots = await _mathjs('solve($combined,x)');
     if (roots != null && !roots.startsWith('Error')) {
@@ -334,6 +350,56 @@ class AIService {
     } catch (_) {
       return null;
     }
+  }
+
+  static int _detectDegree(String expr) {
+    int maxDeg = 0;
+    for (final m in RegExp(r'x\^(\d+)').allMatches(expr)) {
+      final deg = int.tryParse(m.group(1)!) ?? 0;
+      if (deg > maxDeg) maxDeg = deg;
+    }
+    if (maxDeg == 0 && expr.contains('x')) maxDeg = 1;
+    return maxDeg;
+  }
+
+  static Future<List<double>?> _extractPolyCoeffs(String expr, int degree) async {
+    final n = degree + 1;
+    final points = <int>[];
+    points.add(0);
+    for (int i = 1; points.length < n; i++) {
+      points.add(i);
+      if (points.length < n) points.add(-i);
+    }
+
+    final rows = <String>[];
+    final values = <String>[];
+    for (final p in points) {
+      final row = <String>[];
+      for (int j = 0; j <= degree; j++) {
+        if (p == 0 && j == 0) {
+          row.add('1');
+        } else if (p == 0) {
+          row.add('0');
+        } else {
+          row.add('${math.pow(p, j).toInt()}');
+        }
+      }
+      rows.add('[${row.join(',')}]');
+      final v = await _evaluateAt(expr, p.toDouble());
+      if (v == null) return null;
+      values.add(v);
+    }
+
+    final result = await _mathjs('linsolve([${rows.join(',')}], [${values.join(',')}])');
+    if (result == null || result.startsWith('Error')) return null;
+
+    final coeffs = result
+        .replaceAll('[', '').replaceAll(']', '')
+        .split(',')
+        .map((s) => double.tryParse(s.trim()) ?? 0)
+        .toList();
+
+    return coeffs.reversed.toList();
   }
 
   static Future<String?> _evaluateAt(String expr, double x) async {
