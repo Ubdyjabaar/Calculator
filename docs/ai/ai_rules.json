@@ -3,7 +3,7 @@
   "api": {
     "mathjs_url": "http://api.mathjs.org/v4/"
   },
-  "gemini_api_key": "AIzaSyDvAb8RN6I2_hwRqtoemDxQjFtLsHNN129tz_vzRZIAAGArDYb1yw",
+  "gemini_api_key": "",
   "keywords": {
     "derivative": ["derivative of","derive","differentiate","d/dx","ddx","find the derivative"],
     "integral": ["integral of","integrate","antiderivative","find the integral","indefinite integral","∫"],
