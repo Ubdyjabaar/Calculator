@@ -209,28 +209,22 @@ class AIService {
     // Polynomial root finding for degree >= 3
     final degree = _detectDegree(combined);
     if (degree >= 3) {
-      final coeffs = await _extractPolyCoeffs(combined, degree);
+      // Simplify first to get canonical form
+      final simplified = await _mathjs('simplify($combined)');
+      final polyExpr = (simplified != null && !simplified.startsWith('Error')) ? simplified : combined;
+      final coeffs = await _extractPolyCoeffs(polyExpr, degree);
       if (coeffs != null && coeffs.length == degree + 1) {
         final rootsResult = await _mathjs('roots([${coeffs.join(',')}])');
         if (rootsResult != null && !rootsResult.startsWith('Error')) {
-          buf.writeln('Step: Find all roots numerically');
-          buf.writeln('  Polynomial degree: $degree');
+          buf.writeln('Step: Find all $degree roots numerically');
           buf.writeln('  Roots: $rootsResult');
           return buf.toString();
         }
       }
     }
 
-    final roots = await _mathjs('solve($combined,x)');
-    if (roots != null && !roots.startsWith('Error')) {
-      buf.writeln('Solution:');
-      buf.writeln('  x = $roots');
-      return buf.toString();
-    }
-
-    final err = await _mathjsRaw('solve($combined,x)');
     final template = await AIConfig.getMessage('math_error');
-    return template.replaceAll('{error}', err ?? 'Could not solve equation.');
+    return template.replaceAll('{error}', 'Unable to solve this equation. Try factoring or simplifying first.');
   }
 
   static Future<String> _handleSimplify(String expr) async {
@@ -411,8 +405,14 @@ class AIService {
     return coeffs.reversed.toList();
   }
 
-  static Future<String?> _evaluateAt(String expr, double x) async {
-    return await _mathjs('evaluate(\'$expr\', {x: $x})');
+  static Future<String?> _evaluateAt(String expr, double xVal) async {
+    // Substitute x with value directly (mathjs.org API doesn't support evaluate with scope)
+    String s = expr;
+    // Insert * before x when preceded by digit or closing paren (3x -> 3*x)
+    s = s.replaceAllMapped(RegExp(r'([\d\)])x'), (m) => '${m[1]}*x');
+    // Replace standalone x (not part of function names like exp, sin) with value
+    s = s.replaceAllMapped(RegExp(r'(?<![a-zA-Z])x(?![a-zA-Z\(])'), (_) => xVal < 0 ? '($xVal)' : '$xVal');
+    return await _mathjs(s);
   }
 
   static String _fixExpression(String s) {
