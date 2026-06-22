@@ -7,7 +7,7 @@
 <meta name="description" content="Premium calculator app for Android & Windows. Fast, secure, beautifully designed with AI math solver, unit converter, and more.">
 <meta property="og:title" content="Abdijabar Tech — Beautiful Calculator. Powerful Results.">
 <meta property="og:description" content="Premium cross-platform calculator with AI math solver, unit converter, graphing, and more.">
-<meta property="og:image" content="assets/icon/new_icon_square.png">
+<meta property="og:image" content="assets/splash_icon.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="assets/icon/new_icon_square.png">
@@ -360,7 +360,7 @@ footer .footer-bottom .social-links a:hover{background:var(--primary);color:#fff
   <div class="container">
     <div class="hero-grid">
       <div class="hero-text">
-        <div class="hero-badge"><span class="badge-dot"></span> v1.5.0 — New App Icon + UI Fixes</div>
+        <div class="hero-badge"><span class="badge-dot"></span> v1.6.0 — Universal AI Input + Camera Scanner</div>
         <h1>Beautiful <span class="gradient-text">Calculator</span>.<br>Powerful Results.</h1>
         <p>Abdijabar Tech is a premium cross-platform calculator built for speed and elegance. From basic arithmetic to AI-powered math solving — it just flows.</p>
         <div class="hero-actions">
@@ -454,7 +454,7 @@ footer .footer-bottom .social-links a:hover{background:var(--primary);color:#fff
     <div class="download-grid" id="downloadGrid">
       <div class="download-card reveal" data-platform="android">
         <span class="dl-icon">🤖</span>
-        <div class="dl-version">v1.5.0</div>
+        <div class="dl-version">v1.6.0</div>
         <h4>Android</h4>
         <div class="dl-meta">APK — Direct install</div>
         <div class="dl-meta dl-size">---</div>
@@ -468,7 +468,7 @@ footer .footer-bottom .social-links a:hover{background:var(--primary);color:#fff
       </div>
       <div class="download-card reveal" data-platform="windows">
         <span class="dl-icon">🪟</span>
-        <div class="dl-version">v1.5.0</div>
+        <div class="dl-version">v1.6.0</div>
         <h4>Windows</h4>
         <div class="dl-meta">EXE — Portable zip</div>
         <div class="dl-meta dl-size">---</div>
@@ -493,6 +493,7 @@ footer .footer-bottom .social-links a:hover{background:var(--primary);color:#fff
       <p class="section-subtitle">We ship frequently. Here's what's new.</p>
     </div>
     <div class="timeline">
+      <div class="timeline-item reveal"><div class="tl-version">v1.6.0</div><div class="tl-date">June 22, 2026</div><div class="tl-content"><h4>Universal AI Input + Camera Scanner</h4><ul><li>AI chat now accepts ANY math expression — no more keyword lockout</li><li>Camera & gallery scanner in AI chat — snap a photo, extract math text via OCR</li><li>Tip calculator crash fixed when selecting Tip category</li><li>Calculator title centered on all screens via AppBar</li><li class="fix">Real mathjs error messages returned instead of generic help text</li></ul></div></div>
       <div class="timeline-item reveal"><div class="tl-version">v1.5.0</div><div class="tl-date">June 22, 2026</div><div class="tl-content"><h4>New App Icon + UI Fixes</h4><ul><li>Proper adaptive app icon for Samsung A35 5G squircle shape</li><li>Centered "AI Math Solver" and "Scan & Solve" titles</li><li>New AT.png logo on website</li><li>Updated website favicon to match app icon</li><li class="fix">Screen.jpeg used as website mockup screenshot</li></ul></div></div>
       <div class="timeline-item reveal"><div class="tl-version">v1.4.0</div><div class="tl-date">June 22, 2026</div><div class="tl-content"><h4>Website Redesign + New App Icon</h4><ul><li>Stunning cosmic-glass website redesign with particle animations</li><li>New modern app icon on Android and Windows</li><li>Floating 3D mockup, animated cards, lightbox gallery</li><li class="fix">Live GitHub release data integration</li></ul></div></div>
       <div class="timeline-item reveal"><div class="tl-version">v1.3.0</div><div class="tl-date">June 22, 2026</div><div class="tl-content"><h4>AI Math Solver — No API Key!</h4><ul><li>Free math API — works immediately, zero setup</li><li>"derivative of x^2" or "solve x^2 - 5x + 6 = 0"</li><li>Derivatives, integrals, equations, simplify, factor</li><li class="fix">Trig notation: cos²t + sin²t = 1</li></ul></div></div>
@@ -874,11 +875,11 @@ async function incrementDl(platform) { await openDB(); const count = await getDl
 // GitHub Release download URLs
 const repoOwner = 'Ubdyjabaar';
 const repoName = 'Calculator';
-const releaseTag = 'v1.5.0';
+const releaseTag = 'v1.6.0';
     const ghBase = `https://github.com/${repoOwner}/${repoName}/releases/download/${releaseTag}`;
     const staticFiles = {
-      android: { path: `${ghBase}/AbdijabarTech_v1.5.0.apk`, name: 'AbdijabarTech_v1.5.0.apk', size: '91.1 MB' },
-      windows: { path: `${ghBase}/AbdijabarTech_Windows_v1.5.0.zip`, name: 'AbdijabarTech_Windows_v1.5.0.zip', size: '14.8 MB' },
+      android: { path: `${ghBase}/AbdijabarTech_v1.6.0.apk`, name: 'AbdijabarTech_v1.6.0.apk', size: '91.2 MB' },
+      windows: { path: `${ghBase}/AbdijabarTech_Windows_v1.6.0.zip`, name: 'AbdijabarTech_Windows_v1.6.0.zip', size: '14.9 MB' },
     };
 
 async function refreshDownloadCards() {
