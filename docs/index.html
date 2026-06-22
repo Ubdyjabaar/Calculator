@@ -360,7 +360,7 @@ footer .footer-bottom .social-links a:hover{background:var(--primary);color:#fff
   <div class="container">
     <div class="hero-grid">
       <div class="hero-text">
-        <div class="hero-badge"><span class="badge-dot"></span> v1.7.0 — Step-by-Step AI Solutions</div>
+        <div class="hero-badge"><span class="badge-dot"></span> v1.7.1 — Gemini AI Engine</div>
         <h1>Beautiful <span class="gradient-text">Calculator</span>.<br>Powerful Results.</h1>
         <p>Abdijabar Tech is a premium cross-platform calculator built for speed and elegance. From basic arithmetic to AI-powered math solving — it just flows.</p>
         <div class="hero-actions">
@@ -454,7 +454,7 @@ footer .footer-bottom .social-links a:hover{background:var(--primary);color:#fff
     <div class="download-grid" id="downloadGrid">
       <div class="download-card reveal" data-platform="android">
         <span class="dl-icon">🤖</span>
-        <div class="dl-version">v1.7.0</div>
+        <div class="dl-version">v1.7.1</div>
         <h4>Android</h4>
         <div class="dl-meta">APK — Direct install</div>
         <div class="dl-meta dl-size">---</div>
@@ -468,7 +468,7 @@ footer .footer-bottom .social-links a:hover{background:var(--primary);color:#fff
       </div>
       <div class="download-card reveal" data-platform="windows">
         <span class="dl-icon">🪟</span>
-        <div class="dl-version">v1.7.0</div>
+        <div class="dl-version">v1.7.1</div>
         <h4>Windows</h4>
         <div class="dl-meta">EXE — Portable zip</div>
         <div class="dl-meta dl-size">---</div>
@@ -493,6 +493,7 @@ footer .footer-bottom .social-links a:hover{background:var(--primary);color:#fff
       <p class="section-subtitle">We ship frequently. Here's what's new.</p>
     </div>
     <div class="timeline">
+      <div class="timeline-item reveal"><div class="tl-version">v1.7.1</div><div class="tl-date">June 22, 2026</div><div class="tl-content"><h4>Gemini AI Engine</h4><ul><li>Replaced mathjs.org API with Google Gemini 2.0 Flash AI for all math solving</li><li>Natural language queries — type anything like "solve x³ + 3x = 12" directly</li><li>Step-by-step explanations with clear mathematical reasoning</li><li>Handles derivatives, integrals, equations, simplify, factor, and more</li><li>Gemini API key stored in remote config for easy rotation without app updates</li><li class="fix">Eliminated all mathjs API limitations (no solve(), no scope-based evaluate)</li></ul></div></div>
       <div class="timeline-item reveal"><div class="tl-version">v1.7.0</div><div class="tl-date">June 22, 2026</div><div class="tl-content"><h4>Step-by-Step AI Solutions</h4><ul><li>Derivative step-by-step with term-by-term differentiation and power rule explanation</li><li>Integral step-by-step showing each term integrated individually</li><li>Equation solver shows coefficients, discriminant, quadratic formula steps, and roots</li><li>Polynomial solver for cubic and higher-degree equations using numeric root finding</li><li>Simplify and factor operations show expansion and pattern recognition steps</li><li>Remote AI config — update chatbot behavior without app reinstalls (keywords, messages, API URL fetched from GitHub Pages)</li><li class="fix">Real mathjs error messages shown instead of generic HTTP 400 errors</li><li class="fix">App no longer crashes on connection errors — shows friendly message instead</li></ul></div></div>
       <div class="timeline-item reveal"><div class="tl-version">v1.6.0</div><div class="tl-date">June 22, 2026</div><div class="tl-content"><h4>Universal AI Input + Camera Scanner</h4><ul><li>AI chat now accepts ANY math expression — no more keyword lockout</li><li>Camera & gallery scanner in AI chat — snap a photo, extract math text via OCR</li><li>Tip calculator crash fixed when selecting Tip category</li><li>Calculator title centered on all screens via AppBar</li><li class="fix">Real mathjs error messages returned instead of generic help text</li></ul></div></div>
       <div class="timeline-item reveal"><div class="tl-version">v1.5.0</div><div class="tl-date">June 22, 2026</div><div class="tl-content"><h4>New App Icon + UI Fixes</h4><ul><li>Proper adaptive app icon for Samsung A35 5G squircle shape</li><li>Centered "AI Math Solver" and "Scan & Solve" titles</li><li>New AT.png logo on website</li><li>Updated website favicon to match app icon</li><li class="fix">Screen.jpeg used as website mockup screenshot</li></ul></div></div>
@@ -876,11 +877,11 @@ async function incrementDl(platform) { await openDB(); const count = await getDl
 // GitHub Release download URLs
 const repoOwner = 'Ubdyjabaar';
 const repoName = 'Calculator';
-const releaseTag = 'v1.7.0';
+const releaseTag = 'v1.7.1';
     const ghBase = `https://github.com/${repoOwner}/${repoName}/releases/download/${releaseTag}`;
     const staticFiles = {
-      android: { path: `${ghBase}/AbdijabarTech_v1.7.0.apk`, name: 'AbdijabarTech_v1.7.0.apk', size: '87.0 MB' },
-      windows: { path: `${ghBase}/AbdijabarTech_Windows_v1.7.0.zip`, name: 'AbdijabarTech_Windows_v1.7.0.zip', size: '14.2 MB' },
+      android: { path: `${ghBase}/AbdijabarTech_v1.7.1.apk`, name: 'AbdijabarTech_v1.7.1.apk', size: '87.0 MB' },
+      windows: { path: `${ghBase}/AbdijabarTech_Windows_v1.7.1.zip`, name: 'AbdijabarTech_Windows_v1.7.1.zip', size: '14.2 MB' },
     };
 
 async function refreshDownloadCards() {

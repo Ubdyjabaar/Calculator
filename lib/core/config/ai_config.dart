@@ -44,4 +44,13 @@ class AIConfig {
     final cfg = await _load();
     return (cfg['api']?['mathjs_url'] as String?) ?? 'http://api.mathjs.org/v4/';
   }
+
+  static Future<String> getGeminiApiKey() async {
+    final cfg = await _load();
+    final key = cfg['gemini_api_key'] as String?;
+    if (key != null && key.isNotEmpty && key != 'YOUR_GEMINI_API_KEY_HERE') {
+      return key;
+    }
+    return '';
+  }
 }
