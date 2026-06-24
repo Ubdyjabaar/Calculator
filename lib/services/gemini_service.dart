@@ -7,7 +7,7 @@ class GeminiService {
     const p2 = 'bf4b1094bfc424bbe000237ffddb988c';
     return p1 + p2;
   }
-  static const String _model = 'deepseek/deepseek-r1';
+  static const String _model = 'deepseek/deepseek-chat';
 
   static Future<String> ask(String query) async {
     try {
@@ -31,7 +31,7 @@ class GeminiService {
               ],
             }),
           )
-          .timeout(const Duration(seconds: 60));
+          .timeout(const Duration(seconds: 120));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
