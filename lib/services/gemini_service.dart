@@ -7,13 +7,13 @@ class GeminiService {
     const p2 = 'zLOBboExALHUtcSlfvI';
     return p1 + p2;
   }
-  static const String _model = 'grok-2-latest';
+  static const String _model = 'openai/gpt-oss-120b';
 
   static Future<String> ask(String query) async {
     try {
       final response = await http
           .post(
-            Uri.parse('https://api.x.ai/v1/chat/completions'),
+            Uri.parse('https://api.groq.com/openai/v1/chat/completions'),
             headers: {
               'Authorization': 'Bearer $_apiKey',
               'Content-Type': 'application/json',
