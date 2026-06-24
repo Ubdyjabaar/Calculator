@@ -1,92 +1,54 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../core/config/ai_config.dart';
 
 class GeminiService {
-  static const String _model = 'gemini-2.0-flash';
-  static const String _baseUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent';
-
-  static String get _hardcodedKey {
-    const p1 = 'AQ.Ab8RN6LiUO088nKF6JJCsNvYJn_Vd-rYTDi0Wa0';
-    const p2 = '8YrUaQMpFFQ';
+  static String get _apiKey {
+    const p1 = 'sk-or-v1-8f222c9d7104bddc065eb7ada450df1f';
+    const p2 = 'bf4b1094bfc424bbe000237ffddb988c';
     return p1 + p2;
   }
+  static const String _model = 'deepseek/deepseek-r1';
 
   static Future<String> ask(String query) async {
-    final remoteKey = await AIConfig.getGeminiApiKey();
-    final apiKey = remoteKey.isNotEmpty ? remoteKey : _hardcodedKey;
-
-    final url = '$_baseUrl?key=$apiKey';
-
     try {
       final response = await http
           .post(
-            Uri.parse(url),
-            headers: {'Content-Type': 'application/json'},
+            Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
+            headers: {
+              'Authorization': 'Bearer $_apiKey',
+              'Content-Type': 'application/json',
+            },
             body: jsonEncode({
-              'contents': [
+              'model': _model,
+              'messages': [
                 {
-                  'parts': [
-                    {
-                      'text':
-                          'You are a math tutor. Solve the math problem and explain step by step. '
-                              'Show each step clearly. For equations, show how to rearrange, '
-                              'apply formulas, and find the answer. Be concise but thorough.\n\n'
-                              'Problem: $query'
-                    }
-                  ]
-                }
-              ],
-              'generationConfig': {
-                'temperature': 0.2,
-                'maxOutputTokens': 2048,
-                'topP': 0.9,
-              },
-              'safetySettings': [
-                {
-                  'category': 'HARM_CATEGORY_HARASSMENT',
-                  'threshold': 'BLOCK_NONE'
+                  'role': 'system',
+                  'content':
+                      'You are a math tutor. Solve step by step. Show formulas used. '
+                          'Explain each step. Provide the final answer clearly.'
                 },
-                {
-                  'category': 'HARM_CATEGORY_HATE_SPEECH',
-                  'threshold': 'BLOCK_NONE'
-                },
-                {
-                  'category': 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-                  'threshold': 'BLOCK_NONE'
-                },
-                {
-                  'category': 'HARM_CATEGORY_DANGEROUS_CONTENT',
-                  'threshold': 'BLOCK_NONE'
-                },
+                {'role': 'user', 'content': query},
               ],
             }),
           )
-          .timeout(const Duration(seconds: 30));
+          .timeout(const Duration(seconds: 60));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final candidates = data['candidates'] as List?;
-        if (candidates != null && candidates.isNotEmpty) {
-          final parts = candidates[0]['content']?['parts'] as List?;
-          if (parts != null && parts.isNotEmpty) {
-            final text = parts[0]['text'] as String?;
-            if (text != null && text.isNotEmpty) {
-              return text.trim();
-            }
-          }
+        final text = data['choices']?[0]?['message']?['content'] as String?;
+        if (text != null && text.isNotEmpty) {
+          return text.trim();
         }
-        return 'Gemini returned an empty response. Try rephrasing.';
+        return 'Empty response. Try rephrasing.';
       }
 
       final body = response.body;
       try {
         final err = jsonDecode(body);
         final msg = err['error']?['message'] ?? 'HTTP ${response.statusCode}';
-        return 'Gemini Error: $msg';
+        return 'Error: $msg';
       } catch (_) {
-        return 'Gemini Error: HTTP ${response.statusCode}';
+        return 'Error: HTTP ${response.statusCode}';
       }
     } catch (e) {
       return 'Connection error: $e';
