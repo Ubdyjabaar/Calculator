@@ -286,45 +286,170 @@ class SettingsPanel extends StatelessWidget {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-      child: GlassContainer(
-        borderRadius: AppConstants.borderRadius,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        height: 64,
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                gradient: LinearGradient(
-                  colors: [
-                    theme.colorScheme.primary,
-                    theme.colorScheme.secondary,
-                  ],
+      child: GestureDetector(
+        onTap: () => _showPolicyDialog(context),
+        child: GlassContainer(
+          borderRadius: AppConstants.borderRadius,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          height: 64,
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    colors: [
+                      theme.colorScheme.primary,
+                      theme.colorScheme.secondary,
+                    ],
+                  ),
+                ),
+                child: const Center(
+                  child: Text('PC',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14)),
                 ),
               ),
-              child: const Center(
-                child: Text('PC',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14)),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                '${AppConstants.appName}  v${AppConstants.appVersion}',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '${AppConstants.appName}  v${AppConstants.appVersion}',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+              Icon(Icons.chevron_right,
+                  color: theme.colorScheme.primary, size: 20),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  void _showPolicyDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: theme.dialogTheme.backgroundColor ??
+            (theme.brightness == Brightness.dark
+                ? const Color(0xFF1A1A2E)
+                : Colors.white),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: LinearGradient(
+                      colors: [
+                        theme.colorScheme.primary,
+                        theme.colorScheme.secondary,
+                      ],
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text('PC',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 18)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: Text(
+                  '${AppConstants.appName} v${AppConstants.appVersion}',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: Text(
+                  'Developed by Abdijabar',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              _policySection(theme, 'Privacy Policy',
+                  'We do not collect, store, or share any personal data. '
+                  'All calculations are processed locally on your device. '
+                  'No internet connection is required for calculation features.'),
+              const SizedBox(height: 16),
+              _policySection(theme, 'Terms of Use',
+                  'This app is provided as-is without warranties. '
+                  'You may use it freely for personal and educational purposes. '
+                  'AI features require an internet connection and use third-party APIs.'),
+              const SizedBox(height: 16),
+              _policySection(theme, 'Contact',
+                  'Developer: Abdijabar\n'
+                  'Email: Jibaar21@gmail.com\n'
+                  'GitHub: https://github.com/Ubdyjabaar'),
+            ],
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12, right: 12),
+            child: TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: theme.colorScheme.primary,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Close',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _policySection(ThemeData theme, String title, String body) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.primary,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          body,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            height: 1.5,
+            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
+          ),
+        ),
+      ],
     );
   }
 }

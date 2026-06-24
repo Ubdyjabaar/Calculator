@@ -26,58 +26,59 @@ class DisplaySection extends StatelessWidget {
         builder: (context, constraints) {
           final availH = constraints.maxHeight;
           final tight = availH < 130;
-          final vPad = tight ? 8.0 : 14.0;
-          final topFontSize = tight ? 14.0 : AppConstants.fontSizeExpression;
-          final resultFontSize = _resultFontSize(result, tight);
+          final vPad = tight ? 8.0 : 12.0;
 
           return GlassContainer(
             borderRadius: AppConstants.borderRadiusLarge,
-            padding:
-                EdgeInsets.symmetric(horizontal: 24, vertical: vPad),
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: vPad),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
+                  flex: tight ? 1 : 1,
+                  child: Align(
                     alignment: Alignment.bottomRight,
-                    child: Text(
-                      previousExpression.isNotEmpty
-                          ? previousExpression
-                          : expression,
-                      textDirection: TextDirection.ltr,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: theme.textTheme.headlineMedium?.color
-                            ?.withValues(alpha: 0.5),
-                        fontSize: topFontSize,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      reverse: true,
+                      child: Text(
+                        hasResult ? previousExpression : '',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          color: theme.textTheme.headlineMedium?.color
+                              ?.withValues(alpha: 0.45),
+                          fontSize: tight ? 16 : 22,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
                       ),
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
-                SizedBox(height: tight ? 4 : 8),
+                SizedBox(height: tight ? 2 : 6),
                 Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
+                  flex: tight ? 1 : 2,
+                  child: Align(
                     alignment: Alignment.bottomRight,
-                    child: Text(
-                      hasResult
-                          ? result
-                          : (expression.isEmpty ? '0' : expression),
-                      textDirection: TextDirection.ltr,
-                      style: theme.textTheme.displayMedium?.copyWith(
-                        fontSize: resultFontSize,
-                        fontWeight: FontWeight.w300,
-                        color: hasResult
-                            ? Theme.of(context).colorScheme.primary
-                            : theme.textTheme.displayMedium?.color,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      reverse: true,
+                      child: Text(
+                        hasResult
+                            ? result
+                            : (expression.isEmpty ? '0' : expression),
+                        style: theme.textTheme.displayMedium?.copyWith(
+                          fontSize: _resultFontSize(
+                              hasResult ? result : expression, tight),
+                          fontWeight: FontWeight.w300,
+                          color: hasResult
+                              ? theme.colorScheme.primary
+                              : theme.textTheme.displayMedium?.color,
+                        ),
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
                       ),
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),

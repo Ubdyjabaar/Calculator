@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/calculator_provider.dart';
@@ -20,7 +21,35 @@ class CalculatorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final calc = context.read<CalculatorProvider>();
+    final theme = Theme.of(context);
+    final brightness = theme.brightness;
     return Scaffold(
+      drawer: Drawer(
+        elevation: 0,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topRight: Radius.circular(28),
+            bottomRight: Radius.circular(28),
+          ),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              decoration: BoxDecoration(
+                color: brightness == Brightness.dark
+                    ? const Color(0xFF1A1A2E).withValues(alpha: 0.95)
+                    : Colors.white.withValues(alpha: 0.95),
+                border: Border(
+                  right: BorderSide(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: const SettingsPanel(),
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: ResponsiveWrapper(
           child: Column(
@@ -37,39 +66,34 @@ class CalculatorScreen extends StatelessWidget {
 
   Widget _buildAppBar(BuildContext context) {
     final mode = context.watch<CalculatorProvider>().mode;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => _showSettingsPanel(context),
-            tooltip: 'Settings',
-          ),
-          const Spacer(),
-          Text(
-            AppConstants.appName,
-            style: Theme.of(context).appBarTheme.titleTextStyle,
-          ),
-          const Spacer(),
-          if (mode == CalculatorMode.scientific)
-            IconButton(
-              icon: const Icon(Icons.camera_alt_outlined),
-              onPressed: () => _openScan(context),
-              tooltip: 'Scan & Solve',
-            ),
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () => _showHistory(context),
-            tooltip: 'History',
-          ),
-          IconButton(
-            icon: const Icon(Icons.auto_awesome),
-            onPressed: () => _openAI(context),
-            tooltip: 'AI Math Solver',
-          ),
-        ],
+    return AppBar(
+      leading: Builder(
+        builder: (context) => IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => Scaffold.of(context).openDrawer(),
+          tooltip: 'Settings',
+        ),
       ),
+      title: const Text(AppConstants.appName),
+      centerTitle: true,
+      actions: [
+        if (mode == CalculatorMode.scientific)
+          IconButton(
+            icon: const Icon(Icons.camera_alt_outlined),
+            onPressed: () => _openScan(context),
+            tooltip: 'Scan & Solve',
+          ),
+        IconButton(
+          icon: const Icon(Icons.history),
+          onPressed: () => _showHistory(context),
+          tooltip: 'History',
+        ),
+        IconButton(
+          icon: const Icon(Icons.auto_awesome),
+          onPressed: () => _openAI(context),
+          tooltip: 'AI Math Solver',
+        ),
+      ],
     );
   }
 
@@ -87,25 +111,33 @@ class CalculatorScreen extends StatelessWidget {
           shadowColor: Colors.transparent,
           elevation: 0,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          destinations: const [
-            NavigationDestination(
+          destinations: [
+            const NavigationDestination(
               icon: Icon(Icons.calculate_outlined),
               selectedIcon: Icon(Icons.calculate),
               label: 'Standard',
             ),
-            NavigationDestination(
+            const NavigationDestination(
               icon: Icon(Icons.science_outlined),
               selectedIcon: Icon(Icons.science),
               label: 'Scientific',
             ),
-            NavigationDestination(
+            const NavigationDestination(
               icon: Icon(Icons.show_chart_outlined),
               selectedIcon: Icon(Icons.show_chart),
               label: 'Graphing',
             ),
             NavigationDestination(
-              icon: Icon(Icons.swap_horiz_outlined),
-              selectedIcon: Icon(Icons.swap_horiz),
+              icon: AnimatedRotation(
+                turns: mode == CalculatorMode.converter ? 0.5 : 0,
+                duration: const Duration(milliseconds: 400),
+                child: const Icon(Icons.swap_horiz_outlined),
+              ),
+              selectedIcon: AnimatedRotation(
+                turns: mode == CalculatorMode.converter ? 0.5 : 0,
+                duration: const Duration(milliseconds: 400),
+                child: const Icon(Icons.swap_horiz),
+              ),
               label: 'Convert',
             ),
           ],
@@ -264,36 +296,6 @@ class CalculatorScreen extends StatelessWidget {
     );
   }
 
-  void _showSettingsPanel(BuildContext context) {
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: 'Settings',
-      barrierColor: Colors.black54,
-      transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return const Material(
-          type: MaterialType.transparency,
-          child: SettingsPanel(),
-        );
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(-1, 0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutCubic,
-          )),
-          child: FractionallySizedBox(
-            widthFactor: 0.88,
-            child: child,
-          ),
-        );
-      },
-    );
-  }
 }
 
 class _DisplayData {
