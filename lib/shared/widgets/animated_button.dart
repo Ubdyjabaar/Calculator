@@ -15,14 +15,16 @@ class AnimatedButton extends StatefulWidget {
   final double? width;
   final double? height;
   final Gradient? gradient;
+  final Gradient? tapGradient;
   final List<BoxShadow>? boxShadow;
+  final List<BoxShadow>? tapBoxShadow;
 
   const AnimatedButton({
     super.key,
     required this.child,
     this.onTap,
     this.onLongPress,
-    this.scaleAmount = 0.92,
+    this.scaleAmount = 0.95,
     this.backgroundColor,
     this.foregroundColor,
     this.borderRadius = AppConstants.borderRadiusSmall,
@@ -31,7 +33,9 @@ class AnimatedButton extends StatefulWidget {
     this.width,
     this.height,
     this.gradient,
+    this.tapGradient,
     this.boxShadow,
+    this.tapBoxShadow,
   });
 
   @override
@@ -48,14 +52,14 @@ class _AnimatedButtonState extends State<AnimatedButton>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: AppConstants.animationFast,
+      duration: const Duration(milliseconds: 200),
       lowerBound: 0.0,
       upperBound: 1.0,
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: widget.scaleAmount)
         .animate(CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeInOutBack,
+      curve: Curves.easeInOut,
     ));
   }
 
@@ -66,7 +70,7 @@ class _AnimatedButtonState extends State<AnimatedButton>
       _scaleAnimation = Tween<double>(begin: 1.0, end: widget.scaleAmount)
           .animate(CurvedAnimation(
         parent: _controller,
-        curve: Curves.easeInOutBack,
+        curve: Curves.easeInOut,
       ));
     }
   }
@@ -105,6 +109,12 @@ class _AnimatedButtonState extends State<AnimatedButton>
     _controller.reverse();
   }
 
+  static const List<Color> _pressGradientColors = [
+    Color(0xFF0D7D55),
+    Color(0xFF4F80BF),
+    Color(0xFFFFFFFF),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -116,37 +126,96 @@ class _AnimatedButtonState extends State<AnimatedButton>
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
+        final progress = _scaleAnimation.value;
+        final isPressed = _controller.isAnimating && progress < 0.98;
+
+        final useTapGradient = isPressed && widget.tapGradient != null;
+        final currentShadow = isPressed && widget.tapBoxShadow != null
+            ? widget.tapBoxShadow
+            : widget.boxShadow;
+
         return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
+          scale: progress,
+          child: Container(
+            width: widget.width,
+            height: widget.height,
+            padding: widget.padding,
+            decoration: BoxDecoration(
+              color: useTapGradient || widget.gradient != null
+                  ? null
+                  : defaultBg,
+              gradient: useTapGradient
+                  ? widget.tapGradient
+                  : widget.gradient,
+              borderRadius: BorderRadius.circular(widget.borderRadius),
+              boxShadow: currentShadow,
+              border: widget.gradient == null && widget.tapGradient == null
+                  ? Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.06)
+                          : Colors.black.withValues(alpha: 0.04),
+                      width: 1,
+                    )
+                  : null,
+            ),
+            child: Stack(
+              children: [
+                widget.child,
+                if (isPressed && widget.tapGradient == null)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            BorderRadius.circular(widget.borderRadius),
+                        gradient: LinearGradient(
+                          colors: _pressGradientColors,
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          stops: [0.0, 0.5, 1.0],
+                        ),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius:
+                              BorderRadius.circular(widget.borderRadius),
+                          splashColor:
+                              Colors.white.withValues(alpha: 0.3),
+                          highlightColor:
+                              Colors.white.withValues(alpha: 0.1),
+                          onTap: () {},
+                        ),
+                      ),
+                    ),
+                  ),
+                if (isPressed && widget.tapGradient != null)
+                  Positioned.fill(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius:
+                            BorderRadius.circular(widget.borderRadius),
+                        splashColor:
+                            Colors.white.withValues(alpha: 0.4),
+                        highlightColor:
+                            Colors.white.withValues(alpha: 0.15),
+                        onTap: () {},
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         );
       },
       child: GestureDetector(
         onTapDown: _onTapDown,
         onTapUp: _onTapUp,
         onTapCancel: _onTapCancel,
-        onLongPressStart: widget.onLongPress != null ? _onLongPressStart : null,
-        onLongPressEnd: widget.onLongPress != null ? _onLongPressEnd : null,
-        child: Container(
-          width: widget.width,
-          height: widget.height,
-          padding: widget.padding,
-          decoration: BoxDecoration(
-            color: widget.gradient != null ? null : defaultBg,
-            gradient: widget.gradient,
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-            boxShadow: widget.boxShadow,
-            border: widget.gradient == null
-                ? Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.06)
-                        : Colors.black.withValues(alpha: 0.04),
-                    width: 1,
-                  )
-                : null,
-          ),
-          child: widget.child,
-        ),
+        onLongPressStart:
+            widget.onLongPress != null ? _onLongPressStart : null,
+        onLongPressEnd:
+            widget.onLongPress != null ? _onLongPressEnd : null,
       ),
     );
   }

@@ -183,12 +183,12 @@ class CalculatorScreen extends StatelessWidget {
         final totalHeight = constraints.maxHeight;
         final isShort = totalHeight < 600;
 
-        int displayFlex = showScientific ? 3 : 3;
+        int displayFlex = showScientific ? 4 : 4;
         int sciFlex = showScientific ? 3 : 0;
         int keyFlex = showScientific ? 4 : 5;
 
         if (isShort) {
-          displayFlex = showScientific ? 2 : 2;
+          displayFlex = showScientific ? 3 : 3;
           sciFlex = showScientific ? 2 : 0;
           keyFlex = showScientific ? 5 : 5;
         }
@@ -218,28 +218,77 @@ class CalculatorScreen extends StatelessWidget {
                       ),
                     ),
                     if (!data.hasResult && data.expression.isNotEmpty)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.chevron_left, size: 20),
-                            onPressed: calc.moveCursorLeft,
-                            style: IconButton.styleFrom(
-                              foregroundColor: Theme.of(context).colorScheme.primary,
-                              padding: const EdgeInsets.all(6),
-                              minimumSize: const Size(32, 32),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(
+                          children: [
+                            InkWell(
+                              onTap: calc.moveCursorLeft,
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.chevron_left,
+                                        size: 20,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary),
+                                    Text(' Back',
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                            fontWeight: FontWeight.w500)),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.chevron_right, size: 20),
-                            onPressed: calc.moveCursorRight,
-                            style: IconButton.styleFrom(
-                              foregroundColor: Theme.of(context).colorScheme.primary,
-                              padding: const EdgeInsets.all(6),
-                              minimumSize: const Size(32, 32),
+                            const Spacer(),
+                            InkWell(
+                              onTap: calc.moveCursorRight,
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text('Next ',
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                            fontWeight: FontWeight.w500)),
+                                    Icon(Icons.chevron_right,
+                                        size: 20,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                   ],
                 );

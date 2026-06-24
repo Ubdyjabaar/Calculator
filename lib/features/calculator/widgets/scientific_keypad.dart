@@ -36,12 +36,11 @@ class ScientificKeypad extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          const gap = 6.0;
-          const vertPad = 16.0;
+          const gap = 4.0;
           const rowCount = 3;
-          const overhead = vertPad + (rowCount - 1) * gap;
+          const overhead = (rowCount - 1) * gap;
           final btnH =
-              ((constraints.maxHeight - overhead) / rowCount).clamp(20.0, 48.0);
+              ((constraints.maxHeight - overhead) / rowCount).clamp(22.0, 56.0);
 
           return Column(
             children: [

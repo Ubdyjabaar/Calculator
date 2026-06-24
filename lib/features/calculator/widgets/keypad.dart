@@ -35,17 +35,15 @@ class Keypad extends StatelessWidget {
         isDark ? Colors.white70 : const Color(0xFF1A1A2E).withValues(alpha: 0.7);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          const gap = 5.0;
-          const vertPad = 10.0;
-          const rowVertPad = 3.0;
+          const gap = 4.0;
           const totalRows = 5;
-          const overhead = vertPad + (totalRows - 1) * gap + totalRows * rowVertPad;
+          const overhead = (totalRows - 1) * gap;
           final buttonHeight =
-              ((constraints.maxHeight - overhead) / totalRows).clamp(16.0, 64.0);
-          const innerPad = 4.0;
+              ((constraints.maxHeight - overhead) / totalRows).clamp(20.0, 74.0);
+          const innerPad = 3.0;
 
           return Column(
             children: [
@@ -122,6 +120,15 @@ class Keypad extends StatelessWidget {
                     offset: const Offset(0, 2),
                   ),
                 ],
+          tapBoxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: const Color(0xFF4F80BF).withValues(alpha: 0.3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
           child: Center(
             child: Text(
               digit,
@@ -149,13 +156,21 @@ class Keypad extends StatelessWidget {
       child: AnimatedButton(
         onTap: onTap,
         hapticFeedback: hapticFeedback,
-        gradient: LinearGradient(
+        backgroundColor: primaryColor.withValues(alpha: 0.15),
+        tapGradient: LinearGradient(
           colors: _actionGradient,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: AppConstants.borderRadiusSmall,
         height: buttonHeight,
+        tapBoxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0D7D55).withValues(alpha: 0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
         child: Center(
           child: Text(
             op,
@@ -182,6 +197,15 @@ class Keypad extends StatelessWidget {
             : Colors.black.withValues(alpha: 0.04),
         borderRadius: AppConstants.borderRadiusSmall,
         height: buttonHeight,
+        tapBoxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
         child: Center(
           child: Text(
             label,
@@ -208,6 +232,15 @@ class Keypad extends StatelessWidget {
             : Colors.black.withValues(alpha: 0.04),
         borderRadius: AppConstants.borderRadiusSmall,
         height: buttonHeight,
+        tapBoxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
         child: Center(
           child: Icon(
             Icons.backspace_outlined,
@@ -225,13 +258,21 @@ class Keypad extends StatelessWidget {
       child: AnimatedButton(
         onTap: onEquals,
         hapticFeedback: hapticFeedback,
-        gradient: LinearGradient(
+        backgroundColor: primaryColor.withValues(alpha: 0.2),
+        tapGradient: LinearGradient(
           colors: _actionGradient.reversed.toList(),
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: AppConstants.borderRadiusSmall,
         height: buttonHeight,
+        tapBoxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0D7D55).withValues(alpha: 0.5),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
         child: Center(
           child: Text(
             '=',
