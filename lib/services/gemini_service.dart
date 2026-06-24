@@ -3,17 +3,17 @@ import 'package:http/http.dart' as http;
 
 class GeminiService {
   static String get _apiKey {
-    const p1 = 'sk-or-v1-8f222c9d7104bddc065eb7ada450df1f';
-    const p2 = 'bf4b1094bfc424bbe000237ffddb988c';
+    const p1 = 'gsk_wvqek4sAfY7tMvlGaSs0WGdyb3FY69t6I';
+    const p2 = 'zLOBboExALHUtcSlfvI';
     return p1 + p2;
   }
-  static const String _model = 'deepseek/deepseek-chat';
+  static const String _model = 'grok-2-latest';
 
   static Future<String> ask(String query) async {
     try {
       final response = await http
           .post(
-            Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
+            Uri.parse('https://api.x.ai/v1/chat/completions'),
             headers: {
               'Authorization': 'Bearer $_apiKey',
               'Content-Type': 'application/json',
