@@ -137,6 +137,11 @@ class Keypad extends StatelessWidget {
     );
   }
 
+  static const List<Color> _actionGradient = [
+    Color(0xFF0D7D55),
+    Color(0xFF4F80BF),
+  ];
+
   Widget _buildOperatorButton(String op, VoidCallback onTap,
       Color primaryColor, bool isDark, double buttonHeight, double innerPad) {
     return Padding(
@@ -144,16 +149,20 @@ class Keypad extends StatelessWidget {
       child: AnimatedButton(
         onTap: onTap,
         hapticFeedback: hapticFeedback,
-        backgroundColor: primaryColor.withValues(alpha: 0.2),
+        gradient: LinearGradient(
+          colors: _actionGradient,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: AppConstants.borderRadiusSmall,
         height: buttonHeight,
         child: Center(
           child: Text(
             op,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 26,
-              fontWeight: FontWeight.w500,
-              color: primaryColor,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
             ),
           ),
         ),
@@ -217,10 +226,7 @@ class Keypad extends StatelessWidget {
         onTap: onEquals,
         hapticFeedback: hapticFeedback,
         gradient: LinearGradient(
-          colors: [
-            primaryColor,
-            primaryColor.withValues(alpha: 0.8),
-          ],
+          colors: _actionGradient.reversed.toList(),
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

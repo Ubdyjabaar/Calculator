@@ -202,16 +202,46 @@ class CalculatorScreen extends StatelessWidget {
                 result: c.result,
                 previousExpression: c.previousExpression,
                 hasResult: c.hasResult,
+                cursorIndex: c.cursorIndex,
               ),
               builder: (context, data, _) {
-                return Expanded(
-                  flex: displayFlex,
-                  child: DisplaySection(
-                    expression: data.expression,
-                    result: data.result,
-                    previousExpression: data.previousExpression,
-                    hasResult: data.hasResult,
-                  ),
+                return Column(
+                  children: [
+                    Expanded(
+                      flex: displayFlex,
+                      child: DisplaySection(
+                        expression: data.expression,
+                        result: data.result,
+                        previousExpression: data.previousExpression,
+                        hasResult: data.hasResult,
+                        cursorIndex: data.cursorIndex,
+                      ),
+                    ),
+                    if (!data.hasResult && data.expression.isNotEmpty)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.chevron_left, size: 20),
+                            onPressed: calc.moveCursorLeft,
+                            style: IconButton.styleFrom(
+                              foregroundColor: Theme.of(context).colorScheme.primary,
+                              padding: const EdgeInsets.all(6),
+                              minimumSize: const Size(32, 32),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.chevron_right, size: 20),
+                            onPressed: calc.moveCursorRight,
+                            style: IconButton.styleFrom(
+                              foregroundColor: Theme.of(context).colorScheme.primary,
+                              padding: const EdgeInsets.all(6),
+                              minimumSize: const Size(32, 32),
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
                 );
               },
             ),
@@ -303,12 +333,14 @@ class _DisplayData {
   final String result;
   final String previousExpression;
   final bool hasResult;
+  final int cursorIndex;
 
   const _DisplayData({
     required this.expression,
     required this.result,
     required this.previousExpression,
     required this.hasResult,
+    required this.cursorIndex,
   });
 
   @override
@@ -318,9 +350,10 @@ class _DisplayData {
           expression == other.expression &&
           result == other.result &&
           previousExpression == other.previousExpression &&
-          hasResult == other.hasResult;
+          hasResult == other.hasResult &&
+          cursorIndex == other.cursorIndex;
 
   @override
   int get hashCode =>
-      Object.hash(expression, result, previousExpression, hasResult);
+      Object.hash(expression, result, previousExpression, hasResult, cursorIndex);
 }

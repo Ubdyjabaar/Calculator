@@ -13,6 +13,7 @@ class CalculatorProvider extends ChangeNotifier {
   bool _hasResult = false;
   String _graphFunction = 'sin(x)';
   int _precision = 10;
+  int _cursorIndex = 0;
   HistoryProvider? _historyProvider;
 
   CalculatorMode get mode => _mode;
@@ -22,6 +23,7 @@ class CalculatorProvider extends ChangeNotifier {
   bool get degreesMode => _degreesMode;
   bool get hasResult => _hasResult;
   String get graphFunction => _graphFunction;
+  int get cursorIndex => _cursorIndex;
 
   void setHistoryProvider(HistoryProvider provider) {
     _historyProvider = provider;
@@ -46,27 +48,58 @@ class CalculatorProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setCursorPosition(int index) {
+    if (index >= 0 && index <= _expression.length) {
+      _cursorIndex = index;
+      notifyListeners();
+    }
+  }
+
+  void moveCursorLeft() {
+    if (_cursorIndex > 0) {
+      _cursorIndex--;
+      notifyListeners();
+    }
+  }
+
+  void moveCursorRight() {
+    if (_cursorIndex < _expression.length) {
+      _cursorIndex++;
+      notifyListeners();
+    }
+  }
+
   void inputNumber(String number) {
     if (_hasResult) {
       _expression = '';
       _result = '0';
       _hasResult = false;
+      _cursorIndex = 0;
     }
     if (_expression.replaceAll(RegExp(r'[^0-9]'), '').length >= 15) return;
-    _expression += number;
+    _expression = _expression.substring(0, _cursorIndex) +
+        number +
+        _expression.substring(_cursorIndex);
+    _cursorIndex++;
     notifyListeners();
   }
 
   void inputOperator(String op) {
-    _hasResult = false;
+    if (_hasResult && _expression.isEmpty) {
+      _hasResult = false;
+    }
     if (_expression.isEmpty && op == '-') {
       _expression = '-';
-    } else if (_expression.isNotEmpty) {
-      final last = _expression[_expression.length - 1];
-      if ('+-×÷^'.contains(last)) {
-        _expression = _expression.substring(0, _expression.length - 1);
+      _cursorIndex = 1;
+    } else {
+      final before = _expression.substring(0, _cursorIndex);
+      final after = _expression.substring(_cursorIndex);
+      if (before.isNotEmpty && '+-×÷^'.contains(before[before.length - 1])) {
+        _expression = before.substring(0, before.length - 1) + op + after;
+      } else {
+        _expression = before + op + after;
+        _cursorIndex++;
       }
-      _expression += op;
     }
     notifyListeners();
   }
@@ -76,13 +109,19 @@ class CalculatorProvider extends ChangeNotifier {
       _expression = '';
       _result = '0';
       _hasResult = false;
+      _cursorIndex = 0;
     }
+    final before = _expression.substring(0, _cursorIndex);
+    final after = _expression.substring(_cursorIndex);
     if (func == 'π') {
-      _expression += 'π';
+      _expression = before + 'π' + after;
+      _cursorIndex++;
     } else if (func == 'e') {
-      _expression += 'e';
+      _expression = before + 'e' + after;
+      _cursorIndex++;
     } else {
-      _expression += '$func(';
+      _expression = before + '$func(' + after;
+      _cursorIndex += func.length + 1;
     }
     notifyListeners();
   }
@@ -92,18 +131,18 @@ class CalculatorProvider extends ChangeNotifier {
       _expression = '0.';
       _result = '0';
       _hasResult = false;
+      _cursorIndex = 2;
       notifyListeners();
       return;
     }
-    if (_expression.isEmpty) {
-      _expression = '0.';
-    } else {
-      final parts = _expression.split(RegExp(r'[+\-×÷^()]'));
-      if (parts.isNotEmpty && !parts.last.contains('.')) {
-        _expression += '.';
-      }
+    final before = _expression.substring(0, _cursorIndex);
+    final parts = before.split(RegExp(r'[+\-×÷^()]'));
+    if (parts.isNotEmpty && !parts.last.contains('.')) {
+      _expression =
+          before + '.' + _expression.substring(_cursorIndex);
+      _cursorIndex++;
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   void inputLeftParen() {
@@ -111,13 +150,20 @@ class CalculatorProvider extends ChangeNotifier {
       _expression = '';
       _result = '0';
       _hasResult = false;
+      _cursorIndex = 0;
     }
-    _expression += '(';
+    final before = _expression.substring(0, _cursorIndex);
+    final after = _expression.substring(_cursorIndex);
+    _expression = before + '(' + after;
+    _cursorIndex++;
     notifyListeners();
   }
 
   void inputRightParen() {
-    _expression += ')';
+    final before = _expression.substring(0, _cursorIndex);
+    final after = _expression.substring(_cursorIndex);
+    _expression = before + ')' + after;
+    _cursorIndex++;
     notifyListeners();
   }
 
@@ -126,6 +172,7 @@ class CalculatorProvider extends ChangeNotifier {
     _result = '0';
     _previousExpression = '';
     _hasResult = false;
+    _cursorIndex = 0;
     notifyListeners();
   }
 
@@ -134,11 +181,14 @@ class CalculatorProvider extends ChangeNotifier {
       _expression = '';
       _result = '0';
       _hasResult = false;
+      _cursorIndex = 0;
       notifyListeners();
       return;
     }
-    if (_expression.isNotEmpty) {
-      _expression = _expression.substring(0, _expression.length - 1);
+    if (_cursorIndex > 0) {
+      _expression = _expression.substring(0, _cursorIndex - 1) +
+          _expression.substring(_cursorIndex);
+      _cursorIndex--;
       notifyListeners();
     }
   }
@@ -152,6 +202,7 @@ class CalculatorProvider extends ChangeNotifier {
     }
     if (_expression.isEmpty) {
       _expression = '-';
+      _cursorIndex = 1;
     } else {
       final lastNum = RegExp(r'-?\d+(\.\d+)?$');
       final match = lastNum.stringMatch(_expression);
@@ -159,8 +210,10 @@ class CalculatorProvider extends ChangeNotifier {
         final before = _expression.substring(0, _expression.length - match.length);
         final toggled = match.startsWith('-') ? match.substring(1) : '-$match';
         _expression = before + toggled;
+        _cursorIndex = _expression.length;
       } else {
         _expression = '-$_expression';
+        _cursorIndex = _expression.length;
       }
     }
     notifyListeners();
@@ -175,6 +228,7 @@ class CalculatorProvider extends ChangeNotifier {
       _expression = '';
       _result = _formatResult(result);
       _hasResult = true;
+      _cursorIndex = 0;
       _historyProvider?.addEntry('$_previousExpression%', _result);
       notifyListeners();
     } catch (e) {
@@ -208,6 +262,7 @@ class CalculatorProvider extends ChangeNotifier {
           }
           _expression = '';
           _hasResult = true;
+          _cursorIndex = 0;
           _historyProvider?.addEntry(_previousExpression, _result);
           notifyListeners();
           return;
@@ -218,6 +273,7 @@ class CalculatorProvider extends ChangeNotifier {
       _result = _formatResult(value);
       _expression = '';
       _hasResult = true;
+      _cursorIndex = 0;
       _historyProvider?.addEntry(_previousExpression, _result);
       notifyListeners();
     } catch (e) {
@@ -265,6 +321,7 @@ class CalculatorProvider extends ChangeNotifier {
     _previousExpression = expression;
     _result = result;
     _hasResult = true;
+    _cursorIndex = 0;
     notifyListeners();
     setMode(CalculatorMode.standard);
   }

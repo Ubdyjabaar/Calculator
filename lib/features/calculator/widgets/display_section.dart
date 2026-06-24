@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/calculator_provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/glass_container.dart';
 
@@ -7,6 +9,7 @@ class DisplaySection extends StatelessWidget {
   final String result;
   final String previousExpression;
   final bool hasResult;
+  final int cursorIndex;
 
   const DisplaySection({
     super.key,
@@ -14,6 +17,7 @@ class DisplaySection extends StatelessWidget {
     required this.result,
     required this.previousExpression,
     required this.hasResult,
+    required this.cursorIndex,
   });
 
   @override
@@ -59,26 +63,16 @@ class DisplaySection extends StatelessWidget {
                 SizedBox(height: tight ? 2 : 6),
                 Flexible(
                   flex: tight ? 1 : 2,
-                  child: Align(
-                    alignment: Alignment.bottomRight,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      reverse: true,
-                      child: Text(
-                        hasResult
-                            ? result
-                            : (expression.isEmpty ? '0' : expression),
-                        style: theme.textTheme.displayMedium?.copyWith(
-                          fontSize: _resultFontSize(
-                              hasResult ? result : expression, tight),
-                          fontWeight: FontWeight.w300,
-                          color: hasResult
-                              ? theme.colorScheme.primary
-                              : theme.textTheme.displayMedium?.color,
-                        ),
-                        textAlign: TextAlign.right,
-                        maxLines: 1,
-                      ),
+                  child: GestureDetector(
+                    onTapUp: (details) {
+                      if (!hasResult) {
+                        _handleTap(context, details, tight);
+                      }
+                    },
+                    child: Align(
+                      alignment: Alignment.bottomRight,
+                      child: _buildExpressionWithCursor(
+                          context, theme, tight),
                     ),
                   ),
                 ),
@@ -86,6 +80,79 @@ class DisplaySection extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _handleTap(BuildContext context, TapUpDetails details, bool tight) {
+    final calc = context.read<CalculatorProvider>();
+    final text = expression.isEmpty ? '0' : expression;
+    final fontSize = _resultFontSize(text, tight);
+    final approxCharWidth = fontSize * 0.6;
+    final localX = details.localPosition.dx;
+    final totalWidth = text.length * approxCharWidth;
+    final ratio = (totalWidth - localX + 16) / totalWidth;
+    final index = (text.length * (1 - ratio)).round().clamp(0, text.length);
+    calc.setCursorPosition(index);
+  }
+
+  Widget _buildExpressionWithCursor(
+      BuildContext context, ThemeData theme, bool tight) {
+    final text = hasResult
+        ? result
+        : (expression.isEmpty ? '0' : expression);
+    final fontSize = _resultFontSize(text, tight);
+
+    if (hasResult) {
+      return Text(
+        text,
+        style: theme.textTheme.displayMedium?.copyWith(
+          fontSize: fontSize,
+          fontWeight: FontWeight.w300,
+          color: theme.colorScheme.primary,
+        ),
+        textAlign: TextAlign.right,
+        maxLines: 1,
+      );
+    }
+
+    final beforeCursor = expression.substring(0, cursorIndex);
+    final afterCursor = expression.substring(cursorIndex);
+    final isEmpty = expression.isEmpty;
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      reverse: true,
+      child: RichText(
+        textAlign: TextAlign.right,
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: isEmpty ? '' : beforeCursor,
+              style: theme.textTheme.displayMedium?.copyWith(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w300,
+                color: theme.textTheme.displayMedium?.color,
+              ),
+            ),
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Container(
+                width: 2,
+                height: fontSize * 0.85,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            TextSpan(
+              text: afterCursor,
+              style: theme.textTheme.displayMedium?.copyWith(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w300,
+                color: theme.textTheme.displayMedium?.color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
