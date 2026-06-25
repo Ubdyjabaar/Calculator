@@ -27,6 +27,8 @@ class DisplaySection extends StatefulWidget {
 class _DisplaySectionState extends State<DisplaySection>
     with SingleTickerProviderStateMixin {
   late AnimationController _cursorController;
+  late AnimationController _handleController;
+  late AnimationController _bannerController;
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -36,6 +38,14 @@ class _DisplaySectionState extends State<DisplaySection>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..repeat(reverse: true);
+    _handleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    _bannerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
   }
 
   @override
@@ -46,6 +56,17 @@ class _DisplaySectionState extends State<DisplaySection>
         _scrollToCursor();
       });
     }
+    if (oldWidget.cursorIndex != widget.cursorIndex && widget.cursorIndex >= 0) {
+      _onCursorMoved();
+    }
+  }
+
+  void _onCursorMoved() {
+    _bannerController.forward(from: 0.0);
+    _handleController.forward(from: 0.0);
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) _handleController.reverse();
+    });
   }
 
   void _scrollToCursor() {
@@ -74,6 +95,8 @@ class _DisplaySectionState extends State<DisplaySection>
   @override
   void dispose() {
     _cursorController.dispose();
+    _handleController.dispose();
+    _bannerController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -122,6 +145,7 @@ class _DisplaySectionState extends State<DisplaySection>
                 Flexible(
                   flex: tight ? 1 : 2,
                   child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTapUp: (details) {
                       if (!widget.hasResult) {
                         _handleTap(context, details, tight);
@@ -131,6 +155,11 @@ class _DisplaySectionState extends State<DisplaySection>
                       if (!widget.hasResult) {
                         _handleDrag(context, details, tight);
                       }
+                    },
+                    onHorizontalDragEnd: (_) {
+                      Future.delayed(const Duration(seconds: 2), () {
+                        if (mounted) _handleController.reverse();
+                      });
                     },
                     child: widget.hasResult
                         ? Align(
@@ -167,8 +196,6 @@ class _DisplaySectionState extends State<DisplaySection>
     final calc = context.read<CalculatorProvider>();
     final text = widget.expression;
     if (text.isEmpty) return;
-    final fontSize = 30;
-    final approxCharWidth = fontSize * 0.55;
     final box = context.findRenderObject() as RenderBox?;
     if (box == null) return;
     final localX = box.globalToLocal(details.globalPosition).dx;
@@ -194,51 +221,48 @@ class _DisplaySectionState extends State<DisplaySection>
     final before = widget.expression.substring(0, widget.cursorIndex);
     final after = widget.expression.substring(widget.cursorIndex);
     final fontSize = _resultFontSize(widget.expression, tight);
+    final cursorH = fontSize * 0.65;
+    final handleSize = 10.0;
 
-    return RichText(
-      textAlign: TextAlign.right,
-      text: TextSpan(
-        children: [
-          TextSpan(
-            text: before,
-            style: theme.textTheme.displayMedium?.copyWith(
-              fontSize: fontSize,
-              fontWeight: FontWeight.w300,
-              color: theme.textTheme.displayMedium?.color,
-            ),
+    return Stack(
+      children: [
+        RichText(
+          textAlign: TextAlign.right,
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: before,
+                style: theme.textTheme.displayMedium?.copyWith(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w300,
+                  color: theme.textTheme.displayMedium?.color,
+                ),
+              ),
+              WidgetSpan(
+                alignment: PlaceholderAlignment.aboveBaseline,
+                baseline: TextBaseline.alphabetic,
+                child: _CursorPainter(
+                  cursorController: _cursorController,
+                  handleController: _handleController,
+                  bannerController: _bannerController,
+                  cursorHeight: cursorH,
+                  fontSize: fontSize,
+                  handleSize: handleSize,
+                  primaryColor: theme.colorScheme.primary,
+                ),
+              ),
+              TextSpan(
+                text: after,
+                style: theme.textTheme.displayMedium?.copyWith(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w300,
+                  color: theme.textTheme.displayMedium?.color,
+                ),
+              ),
+            ],
           ),
-          WidgetSpan(
-            alignment: PlaceholderAlignment.aboveBaseline,
-            baseline: TextBaseline.alphabetic,
-            child: AnimatedBuilder(
-              animation: _cursorController,
-              builder: (context, _) {
-                final opacity = _cursorController.value;
-                return Opacity(
-                  opacity: opacity,
-                  child: Container(
-                    width: 2.5,
-                    height: fontSize * 0.65,
-                    margin: EdgeInsets.only(top: fontSize * 0.25),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary,
-                      borderRadius: BorderRadius.circular(1.5),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          TextSpan(
-            text: after,
-            style: theme.textTheme.displayMedium?.copyWith(
-              fontSize: fontSize,
-              fontWeight: FontWeight.w300,
-              color: theme.textTheme.displayMedium?.color,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -252,5 +276,94 @@ class _DisplaySectionState extends State<DisplaySection>
     if (text.length <= 10) return 40;
     if (text.length <= 14) return 32;
     return 26;
+  }
+}
+
+class _CursorPainter extends AnimatedWidget {
+  final AnimationController cursorController;
+  final AnimationController handleController;
+  final AnimationController bannerController;
+  final double cursorHeight;
+  final double fontSize;
+  final double handleSize;
+  final Color primaryColor;
+
+  _CursorPainter({
+    required this.cursorController,
+    required this.handleController,
+    required this.bannerController,
+    required this.cursorHeight,
+    required this.fontSize,
+    required this.handleSize,
+    required this.primaryColor,
+  }) : super(listenable: Listenable.merge([cursorController, handleController, bannerController]));
+
+  @override
+  Widget build(BuildContext context) {
+    final cursorOpacity = cursorController.value;
+    final handleOpacity = handleController.value;
+    final bannerProgress = bannerController.value;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              width: 2.5,
+              height: cursorHeight,
+              margin: EdgeInsets.only(top: fontSize * 0.25),
+              decoration: BoxDecoration(
+                color: primaryColor.withValues(alpha: cursorOpacity),
+                borderRadius: BorderRadius.circular(1.5),
+              ),
+            ),
+            if (bannerProgress > 0.01)
+              Positioned(
+                left: -8,
+                right: -8,
+                top: fontSize * 0.15,
+                child: IgnorePointer(
+                  child: Opacity(
+                    opacity: (1 - bannerProgress) * 0.5,
+                    child: Container(
+                      height: cursorHeight + 6,
+                      decoration: BoxDecoration(
+                        color: primaryColor.withValues(alpha: (1 - bannerProgress) * 0.25),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        if (handleOpacity > 0.01)
+          Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: handleOpacity,
+                child: Container(
+                  width: handleSize,
+                  height: handleSize,
+                  decoration: BoxDecoration(
+                    color: primaryColor,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryColor.withValues(alpha: 0.4),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
