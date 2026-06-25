@@ -25,7 +25,10 @@ class GeminiService {
                   'role': 'system',
                   'content':
                       'You are a math tutor. Solve step by step. Show formulas used. '
-                          'Explain each step. Provide the final answer clearly.'
+                          'Explain each step. Provide the final answer clearly. '
+                          'Use plain text only. Do NOT use markdown, JSON, or code blocks. '
+                          'Use simple math notation like x^2 or sqrt(x). '
+                          'Put the final answer on its own line starting with "Answer".'
                 },
                 {'role': 'user', 'content': query},
               ],
@@ -37,7 +40,7 @@ class GeminiService {
         final data = jsonDecode(response.body);
         final text = data['choices']?[0]?['message']?['content'] as String?;
         if (text != null && text.isNotEmpty) {
-          return text.trim();
+          return _cleanResponse(text.trim());
         }
         return 'Empty response. Try rephrasing.';
       }
@@ -53,5 +56,20 @@ class GeminiService {
     } catch (e) {
       return 'Connection error: $e';
     }
+  }
+
+  static String _cleanResponse(String text) {
+    String r = text;
+    r = r.replaceAllMapped(RegExp(r'\*\*(.*?)\*\*'), (m) => m[1] ?? '');
+    r = r.replaceAll(RegExp(r'`{1,3}.*?`{1,3}'), '');
+    r = r.replaceAllMapped(RegExp(r'\\\[(.*?)\\\]'), (m) => m[1] ?? '');
+    r = r.replaceAllMapped(RegExp(r'\\\((.*?)\\\)'), (m) => m[1] ?? '');
+    r = r.replaceAllMapped(RegExp(r'\\boxed\{(.*?)\}'), (m) => 'Answer: ${m[1]}');
+    r = r.replaceAll(RegExp(r'```[\s\S]*?```'), '');
+    r = r.replaceAll(RegExp(r'\[/?[a-z]+\]'), '');
+    r = r.replaceAll(RegExp(r'^#+\s*', multiLine: true), '');
+    r = r.replaceAll(RegExp(r'\n{3,}'), '\n\n');
+    r = r.replaceAllMapped(RegExp(r'^\s*\*\s*', multiLine: true), (_) => '• ');
+    return r.trim();
   }
 }

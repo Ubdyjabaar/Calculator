@@ -111,45 +111,55 @@ class _UnitConverterState extends State<_UnitConverter> {
 
   @override
   Widget build(BuildContext context) {
-    final prov = context.watch<ConverterProvider>();
-    final cat = prov.selectedCategory;
     final theme = Theme.of(context);
     return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
       child: GlassContainer(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _UnitDropdown(
-              label: 'From',
-              value: prov.fromUnit,
-              units: cat.units,
-              onChanged: (u) {
-                if (u != null) context.read<ConverterProvider>().setFromUnit(u);
-              },
-            ),
-            const SizedBox(height: 8),
-            Center(
-              child: IconButton(
-                icon: const Icon(Icons.swap_vert, size: 22),
-                onPressed: () => context.read<ConverterProvider>().swapUnits(),
-                tooltip: 'Swap units',
-                style: IconButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
-                  foregroundColor: theme.colorScheme.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            _UnitDropdown(
-              label: 'To',
-              value: prov.toUnit,
-              units: cat.units,
-              onChanged: (u) {
-                if (u != null) context.read<ConverterProvider>().setToUnit(u);
+            Selector<ConverterProvider, UnitCategory>(
+              selector: (_, p) => p.selectedCategory,
+              builder: (context, cat, _) {
+                final prov = context.read<ConverterProvider>();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _UnitDropdown(
+                      label: 'From',
+                      value: prov.fromUnit,
+                      units: cat.units,
+                      onChanged: (u) {
+                        if (u != null) prov.setFromUnit(u);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Center(
+                      child: IconButton(
+                        icon: const Icon(Icons.swap_vert, size: 22),
+                        onPressed: () => prov.swapUnits(),
+                        tooltip: 'Swap units',
+                        style: IconButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+                          foregroundColor: theme.colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _UnitDropdown(
+                      label: 'To',
+                      value: prov.toUnit,
+                      units: cat.units,
+                      onChanged: (u) {
+                        if (u != null) prov.setToUnit(u);
+                      },
+                    ),
+                  ],
+                );
               },
             ),
             const SizedBox(height: 16),
@@ -175,40 +185,52 @@ class _UnitConverterState extends State<_UnitConverter> {
               ),
             ),
             const SizedBox(height: 12),
-            GlassContainer(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      prov.result.isEmpty ? '0' : prov.result,
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: prov.result.isNotEmpty
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurface.withValues(alpha: 0.3),
+            Selector<ConverterProvider, _ConverterResult>(
+              selector: (_, p) => _ConverterResult(p.result, p.toUnit.abbreviation),
+              builder: (context, data, _) {
+                final theme = Theme.of(context);
+                return GlassContainer(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          data.result.isEmpty ? '0' : data.result,
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: data.result.isNotEmpty
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                      Text(
+                        data.abbreviation,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    prov.toUnit.abbreviation,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class _ConverterResult {
+  final String result;
+  final String abbreviation;
+  const _ConverterResult(this.result, this.abbreviation);
 }
 
 class _UnitDropdown extends StatelessWidget {
