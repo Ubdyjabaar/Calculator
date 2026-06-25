@@ -360,7 +360,7 @@ footer .footer-bottom .social-links a:hover{background:var(--primary);color:#fff
   <div class="container">
     <div class="hero-grid">
       <div class="hero-text">
-        <div class="hero-badge"><span class="badge-dot"></span> v1.7.1 — New Icon · Groq AI Engine · Premium Press</div>
+        <div class="hero-badge"><span class="badge-dot"></span> <span class="hero-version">v1.7.1</span> — New Icon · Groq AI Engine · Premium Press</div>
         <h1>Beautiful <span class="gradient-text">Calculator</span>.<br>Powerful Results.</h1>
         <p>Abdijabar Tech is a premium cross-platform calculator built for speed and elegance. From basic arithmetic to AI-powered math solving — it just flows.</p>
         <div class="hero-actions">
@@ -874,17 +874,52 @@ async function saveBuild(platform, data) { await openDB(); return new Promise((r
 async function getDlCount(platform) { await openDB(); return new Promise((resolve) => { const tx = db.transaction('downloads', 'readonly'); const req = tx.objectStore('downloads').get(platform); req.onsuccess = () => resolve(req.result ? req.result.count : 0); req.onerror = () => resolve(0); }); }
 async function incrementDl(platform) { await openDB(); const count = await getDlCount(platform); return new Promise((resolve, reject) => { const tx = db.transaction('downloads', 'readwrite'); const req = tx.objectStore('downloads').put({ platform, count: count + 1 }); req.onsuccess = () => resolve(count + 1); req.onerror = () => reject(); }); }
 
-// GitHub Release download URLs
+// GitHub Release — fetch live version & assets
 const repoOwner = 'Ubdyjabaar';
 const repoName = 'Calculator';
-const releaseTag = 'v1.7.1';
-    const ghBase = `https://github.com/${repoOwner}/${repoName}/releases/download/${releaseTag}`;
-    const staticFiles = {
-      android: { path: `${ghBase}/AbdijabarTech_v1.7.1.apk`, name: 'AbdijabarTech_v1.7.1.apk', size: '91.3 MB' },
-      windows: { path: `${ghBase}/AbdijabarTech_Windows_v1.7.1.zip`, name: 'AbdijabarTech_Windows_v1.7.1.zip', size: '15.5 MB' },
+const ghApi = `https://api.github.com/repos/${repoOwner}/${repoName}/releases/latest`;
+
+let latestRelease = null;
+let staticFiles = {};
+
+async function fetchLatestRelease() {
+  try {
+    const res = await fetch(ghApi);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    latestRelease = data;
+    const version = data.tag_name || 'v1.7.1';
+    const ghBase = `https://github.com/${repoOwner}/${repoName}/releases/download/${version}`;
+    const assetMap = {};
+    for (const a of data.assets || []) {
+      const lower = a.name.toLowerCase();
+      if (lower.includes('windows') || lower.includes('.zip')) {
+        assetMap.windows = a;
+      } else if (lower.includes('apk')) {
+        assetMap.android = a;
+      }
+    }
+    staticFiles = {
+      android: assetMap.android ? { path: assetMap.android.browser_download_url, name: assetMap.android.name, size: (assetMap.android.size / 1e6).toFixed(1) + ' MB', dlCount: assetMap.android.download_count } : null,
+      windows: assetMap.windows ? { path: assetMap.windows.browser_download_url, name: assetMap.windows.name, size: (assetMap.windows.size / 1e6).toFixed(1) + ' MB', dlCount: assetMap.windows.download_count } : null,
     };
+    // Update version badges
+    document.querySelectorAll('.hero-version, .dl-version').forEach(el => { el.textContent = version; });
+    return version;
+  } catch (_) {
+    // Fallback
+    const fallback = 'v1.7.1';
+    const ghBase = `https://github.com/${repoOwner}/${repoName}/releases/download/${fallback}`;
+    staticFiles = {
+      android: { path: `${ghBase}/AbdijabarTech_v1.7.1.apk`, name: 'AbdijabarTech_v1.7.1.apk', size: '91.3 MB', dlCount: 0 },
+      windows: { path: `${ghBase}/AbdijabarTech_Windows_v1.7.1.zip`, name: 'AbdijabarTech_Windows_v1.7.1.zip', size: '15.5 MB', dlCount: 0 },
+    };
+    return fallback;
+  }
+}
 
 async function refreshDownloadCards() {
+  if (!latestRelease) await fetchLatestRelease();
   const platforms = ['android', 'windows'];
   for (const p of platforms) {
     const build = await getBuild(p);
@@ -895,10 +930,15 @@ async function refreshDownloadCards() {
     if (build) { sizeEl.textContent = build.size || build.file?.name || 'Custom build'; }
     else if (staticFiles[p]) { sizeEl.textContent = staticFiles[p].size; }
     const countEl = card.querySelector('.dl-count');
-    if (countEl) countEl.textContent = `${count.toLocaleString()} downloads`;
+    const ghCount = staticFiles[p]?.dlCount ?? 0;
+    const total = count + ghCount;
+    if (countEl) countEl.textContent = `${total.toLocaleString()} downloads`;
     const btn = card.querySelector('.dl-btn');
     if (btn) {
-      btn.addEventListener('click', async function(e) {
+      // Remove old listeners
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener('click', async function(e) {
         e.preventDefault();
         const plat = this.dataset.platform.toLowerCase();
         const buildData = await getBuild(plat);
@@ -911,8 +951,9 @@ async function refreshDownloadCards() {
           filename = staticFiles[plat].name;
         } else { return; }
         const newCount = await incrementDl(plat);
-        const countEl = card.querySelector('.dl-count');
-        if (countEl) countEl.textContent = `${newCount.toLocaleString()} downloads`;
+        const cardEl = this.closest('.download-card');
+        const cEl = cardEl?.querySelector('.dl-count');
+        if (cEl) cEl.textContent = `${(newCount + ghCount).toLocaleString()} downloads`;
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;
@@ -927,7 +968,7 @@ async function refreshDownloadCards() {
     }
   }
 }
-refreshDownloadCards();
+fetchLatestRelease().then(() => refreshDownloadCards());
 setInterval(refreshDownloadCards, 30000);
 
 // --- Testimonials Carousel ---
