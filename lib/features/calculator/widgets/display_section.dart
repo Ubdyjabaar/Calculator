@@ -29,7 +29,10 @@ class _DisplaySectionState extends State<DisplaySection>
   late AnimationController _cursorController;
   late AnimationController _handleController;
   late AnimationController _bannerController;
+  final GlobalKey _richTextKey = GlobalKey();
   final ScrollController _scrollController = ScrollController();
+  double _textWidth = 0;
+  int? _dragIndex;
 
   @override
   void initState() {
@@ -52,12 +55,11 @@ class _DisplaySectionState extends State<DisplaySection>
   void didUpdateWidget(DisplaySection oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.expression != widget.expression) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollToCursor();
-      });
+      WidgetsBinding.instance.addPostFrameCallback((_) => _updateTextWidth());
     }
     if (oldWidget.cursorIndex != widget.cursorIndex && widget.cursorIndex >= 0) {
       _onCursorMoved();
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCursor());
     }
   }
 
@@ -69,26 +71,43 @@ class _DisplaySectionState extends State<DisplaySection>
     });
   }
 
+  void _updateTextWidth() {
+    final renderBox = _richTextKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      _textWidth = renderBox.size.width;
+    }
+  }
+
   void _scrollToCursor() {
-    if (_scrollController.hasClients && !widget.hasResult) {
-      final fontSize = 30;
-      final approxCharWidth = fontSize * 0.55;
-      final cursorOffset = widget.cursorIndex * approxCharWidth;
-      final viewportWidth = _scrollController.position.viewportDimension;
-      final target = cursorOffset - viewportWidth + 40;
-      if (target > 0) {
-        _scrollController.animateTo(
-          target.clamp(0, _scrollController.position.maxScrollExtent),
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-        );
-      } else {
-        _scrollController.animateTo(
-          0,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-        );
-      }
+    if (_textWidth == 0 || !_scrollController.hasClients) return;
+    final viewportWidth = _scrollController.position.viewportDimension;
+    final before = widget.expression.substring(0, widget.cursorIndex);
+    final fontSize = _resultFontSize(widget.expression, false);
+    final tp = TextPainter(
+      text: TextSpan(
+        text: before,
+        style: TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.w300,
+          fontFamily: Theme.of(context).textTheme.displayMedium?.fontFamily,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final cursorPos = tp.width;
+    final rightMargin = 20.0;
+    if (cursorPos > _scrollController.offset + viewportWidth - rightMargin) {
+      _scrollController.animateTo(
+        cursorPos - viewportWidth + rightMargin,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+      );
+    } else if (cursorPos < _scrollController.offset) {
+      _scrollController.animateTo(
+        cursorPos - rightMargin,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+      );
     }
   }
 
@@ -99,6 +118,29 @@ class _DisplaySectionState extends State<DisplaySection>
     _bannerController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  int _getIndexFromX(double dx) {
+    final text = widget.expression;
+    if (text.isEmpty) return 0;
+    final fontSize = _resultFontSize(text, false);
+    final adjustedX = dx + (_scrollController.hasClients ? _scrollController.offset : 0);
+    for (int i = 0; i <= text.length; i++) {
+      final before = text.substring(0, i);
+      final tp = TextPainter(
+        text: TextSpan(
+          text: before,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w300,
+            fontFamily: Theme.of(context).textTheme.displayMedium?.fontFamily,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      if (tp.width >= adjustedX) return i;
+    }
+    return text.length;
   }
 
   @override
@@ -130,8 +172,7 @@ class _DisplaySectionState extends State<DisplaySection>
                       child: Text(
                         widget.hasResult ? widget.previousExpression : '',
                         style: theme.textTheme.headlineMedium?.copyWith(
-                          color: theme.textTheme.headlineMedium?.color
-                              ?.withValues(alpha: 0.45),
+                          color: theme.textTheme.headlineMedium?.color?.withValues(alpha: 0.45),
                           fontSize: tight ? 16 : 22,
                           fontWeight: FontWeight.w400,
                         ),
@@ -144,45 +185,51 @@ class _DisplaySectionState extends State<DisplaySection>
                 SizedBox(height: tight ? 2 : 6),
                 Flexible(
                   flex: tight ? 1 : 2,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTapUp: (details) {
-                      if (!widget.hasResult) {
-                        _handleTap(context, details, tight);
-                      }
-                    },
-                    onHorizontalDragUpdate: (details) {
-                      if (!widget.hasResult) {
-                        _handleDrag(context, details, tight);
-                      }
-                    },
-                    onHorizontalDragEnd: (_) {
-                      Future.delayed(const Duration(seconds: 2), () {
-                        if (mounted) _handleController.reverse();
-                      });
-                    },
-                    child: widget.hasResult
-                        ? Align(
-                            alignment: Alignment.bottomRight,
-                            child: Text(
-                              widget.result,
-                              style: theme.textTheme.displayMedium?.copyWith(
-                                fontSize: _resultFontSize(
-                                    widget.result, tight),
-                                fontWeight: FontWeight.w300,
-                                color: theme.colorScheme.primary,
-                              ),
-                              textAlign: TextAlign.right,
-                              maxLines: 1,
+                  child: widget.hasResult
+                      ? Align(
+                          alignment: Alignment.bottomRight,
+                          child: Text(
+                            widget.result,
+                            style: theme.textTheme.displayMedium?.copyWith(
+                              fontSize: _resultFontSize(widget.result, tight),
+                              fontWeight: FontWeight.w300,
+                              color: theme.colorScheme.primary,
                             ),
-                          )
-                        : SingleChildScrollView(
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                          ),
+                        )
+                      : Listener(
+                          behavior: HitTestBehavior.opaque,
+                          onPointerDown: (event) {
+                            final calc = context.read<CalculatorProvider>();
+                            if (widget.expression.isEmpty) return;
+                            final index = _getIndexFromX(event.localPosition.dx);
+                            _dragIndex = index;
+                            calc.setCursorPosition(index);
+                          },
+                          onPointerMove: (event) {
+                            final calc = context.read<CalculatorProvider>();
+                            if (widget.expression.isEmpty) return;
+                            final index = _getIndexFromX(event.localPosition.dx);
+                            if (index != _dragIndex) {
+                              _dragIndex = index;
+                              calc.setCursorPosition(index);
+                            }
+                          },
+                          onPointerUp: (_) {
+                            _dragIndex = null;
+                            Future.delayed(const Duration(seconds: 2), () {
+                              if (mounted) _handleController.reverse();
+                            });
+                          },
+                          child: SingleChildScrollView(
                             controller: _scrollController,
                             scrollDirection: Axis.horizontal,
-                            reverse: true,
+                            physics: const NeverScrollableScrollPhysics(),
                             child: _buildExpressionWithCursor(theme, tight),
                           ),
-                  ),
+                        ),
                 ),
               ],
             ),
@@ -192,31 +239,6 @@ class _DisplaySectionState extends State<DisplaySection>
     );
   }
 
-  void _handleTap(BuildContext context, TapUpDetails details, bool tight) {
-    final calc = context.read<CalculatorProvider>();
-    final text = widget.expression;
-    if (text.isEmpty) return;
-    final box = context.findRenderObject() as RenderBox?;
-    if (box == null) return;
-    final localX = box.globalToLocal(details.globalPosition).dx;
-    final displayWidth = box.size.width - 40;
-    final tapRatio = (displayWidth - localX + 20) / displayWidth;
-    final index = (text.length * tapRatio.clamp(0.0, 1.0)).round().clamp(0, text.length);
-    calc.setCursorPosition(index);
-  }
-
-  void _handleDrag(BuildContext context, DragUpdateDetails details, bool tight) {
-    final calc = context.read<CalculatorProvider>();
-    if (widget.expression.isEmpty) return;
-    final box = context.findRenderObject() as RenderBox?;
-    if (box == null) return;
-    final localX = box.globalToLocal(details.globalPosition).dx;
-    final displayWidth = box.size.width - 40;
-    final tapRatio = (displayWidth - localX + 20) / displayWidth;
-    final index = (widget.expression.length * tapRatio.clamp(0.0, 1.0)).round().clamp(0, widget.expression.length);
-    calc.setCursorPosition(index);
-  }
-
   Widget _buildExpressionWithCursor(ThemeData theme, bool tight) {
     final before = widget.expression.substring(0, widget.cursorIndex);
     final after = widget.expression.substring(widget.cursorIndex);
@@ -224,45 +246,42 @@ class _DisplaySectionState extends State<DisplaySection>
     final cursorH = fontSize * 0.65;
     final handleSize = 10.0;
 
-    return Stack(
-      children: [
-        RichText(
-          textAlign: TextAlign.right,
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: before,
-                style: theme.textTheme.displayMedium?.copyWith(
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w300,
-                  color: theme.textTheme.displayMedium?.color,
-                ),
-              ),
-              WidgetSpan(
-                alignment: PlaceholderAlignment.aboveBaseline,
-                baseline: TextBaseline.alphabetic,
-                child: _CursorPainter(
-                  cursorController: _cursorController,
-                  handleController: _handleController,
-                  bannerController: _bannerController,
-                  cursorHeight: cursorH,
-                  fontSize: fontSize,
-                  handleSize: handleSize,
-                  primaryColor: theme.colorScheme.primary,
-                ),
-              ),
-              TextSpan(
-                text: after,
-                style: theme.textTheme.displayMedium?.copyWith(
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w300,
-                  color: theme.textTheme.displayMedium?.color,
-                ),
-              ),
-            ],
+    return RichText(
+      key: _richTextKey,
+      textAlign: TextAlign.right,
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: before,
+            style: theme.textTheme.displayMedium?.copyWith(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w300,
+              color: theme.textTheme.displayMedium?.color,
+            ),
           ),
-        ),
-      ],
+          WidgetSpan(
+            alignment: PlaceholderAlignment.aboveBaseline,
+            baseline: TextBaseline.alphabetic,
+            child: _CursorPainter(
+              cursorController: _cursorController,
+              handleController: _handleController,
+              bannerController: _bannerController,
+              cursorHeight: cursorH,
+              fontSize: fontSize,
+              handleSize: handleSize,
+              primaryColor: theme.colorScheme.primary,
+            ),
+          ),
+          TextSpan(
+            text: after,
+            style: theme.textTheme.displayMedium?.copyWith(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w300,
+              color: theme.textTheme.displayMedium?.color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

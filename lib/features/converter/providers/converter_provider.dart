@@ -26,8 +26,10 @@ class ConverterProvider extends ChangeNotifier {
 
   void setCategory(UnitCategory category) {
     _selectedCategory = category;
-    _fromUnit = category.units.first;
-    _toUnit = category.units.length > 1 ? category.units[1] : category.units.first;
+    if (category.units.isNotEmpty) {
+      _fromUnit = category.units.first;
+      _toUnit = category.units.length > 1 ? category.units[1] : category.units.first;
+    }
     _inputValue = '';
     _result = '';
     notifyListeners();

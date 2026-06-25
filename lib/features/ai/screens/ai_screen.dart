@@ -1,6 +1,10 @@
+import 'dart:io' show File, Directory;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/ai_provider.dart';
+import '../../../core/utils/ocr.dart';
 import '../../../shared/widgets/glass_container.dart';
 
 class AIScreen extends StatefulWidget {
@@ -13,18 +17,32 @@ class AIScreen extends StatefulWidget {
 class _AIScreenState extends State<AIScreen> {
   final _controller = TextEditingController();
   final _scrollCtrl = ScrollController();
+  final _ocr = OcrService();
+  String? _pendingImagePath;
+  bool _imageLoading = false;
 
   @override
   void dispose() {
     _controller.dispose();
     _scrollCtrl.dispose();
+    _ocr.dispose();
     super.dispose();
   }
 
   void _send() {
     final text = _controller.text;
-    if (text.trim().isEmpty) return;
-    context.read<AIProvider>().sendMessage(text);
+    if (text.trim().isEmpty && _pendingImagePath == null) return;
+
+    String finalText = text.trim();
+
+    if (_pendingImagePath != null) {
+      if (finalText.isEmpty) finalText = 'Solve this:';
+      context.read<AIProvider>().sendMessageWithImage(finalText, _pendingImagePath!);
+      setState(() => _pendingImagePath = null);
+    } else {
+      context.read<AIProvider>().sendMessage(finalText);
+    }
+
     _controller.clear();
     _scrollToBottom();
   }
@@ -39,6 +57,42 @@ class _AIScreenState extends State<AIScreen> {
         );
       }
     });
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final picked = await ImagePicker().pickImage(source: source);
+      if (picked == null) return;
+
+      setState(() => _imageLoading = true);
+
+      String path = picked.path;
+      if (!kIsWeb && path.startsWith('content://')) {
+        final dir = Directory.systemTemp;
+        final tmp = File('${dir.path}/ai_${DateTime.now().millisecondsSinceEpoch}.jpg');
+        await picked.saveTo(tmp.path);
+        path = tmp.path;
+      }
+
+      // Extract text
+      String extracted;
+      try {
+        extracted = (await _ocr.extractText(path)).trim();
+      } catch (_) {
+        extracted = '';
+      }
+
+      if (extracted.isNotEmpty) {
+        _controller.text = extracted;
+      }
+
+      setState(() {
+        _pendingImagePath = path;
+        _imageLoading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _imageLoading = false);
+    }
   }
 
   @override
@@ -73,6 +127,8 @@ class _AIScreenState extends State<AIScreen> {
                     ),
                   ),
           ),
+          if (_pendingImagePath != null)
+            _buildImagePreview(theme),
           if (prov.loading)
             const Padding(
               padding: EdgeInsets.only(bottom: 4),
@@ -84,6 +140,48 @@ class _AIScreenState extends State<AIScreen> {
             ),
           _buildInputBar(theme),
         ],
+      ),
+    );
+  }
+
+  Widget _buildImagePreview(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+      child: GlassContainer(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.file(
+                File(_pendingImagePath!),
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text('Image attached',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  )),
+            ),
+            GestureDetector(
+              onTap: () => setState(() => _pendingImagePath = null),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(Icons.close, size: 14,
+                    color: theme.colorScheme.error),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -106,7 +204,7 @@ class _AIScreenState extends State<AIScreen> {
                 )),
             const SizedBox(height: 8),
             Text(
-              'Solve equations, derive, integrate,\nsimplify expressions, and more.',
+              'Type any math problem or snap a photo.\nSolve, derive, integrate, and more.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -122,7 +220,7 @@ class _AIScreenState extends State<AIScreen> {
   Widget _buildInputBar(ThemeData theme) {
     return Container(
       padding: EdgeInsets.only(
-        left: 8,
+        left: 4,
         right: 4,
         bottom: MediaQuery.of(context).padding.bottom + 4,
         top: 4,
@@ -134,6 +232,18 @@ class _AIScreenState extends State<AIScreen> {
       ),
       child: Row(
         children: [
+          IconButton(
+            icon: const Icon(Icons.camera_alt_outlined),
+            color: theme.colorScheme.primary.withValues(alpha: 0.7),
+            onPressed: () => _pickImage(ImageSource.camera),
+            tooltip: 'Camera',
+          ),
+          IconButton(
+            icon: const Icon(Icons.photo_library_outlined),
+            color: theme.colorScheme.primary.withValues(alpha: 0.7),
+            onPressed: () => _pickImage(ImageSource.gallery),
+            tooltip: 'Gallery',
+          ),
           Expanded(
             child: GlassContainer(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
@@ -163,7 +273,6 @@ class _AIScreenState extends State<AIScreen> {
       ),
     );
   }
-
 }
 
 class _MessageBubble extends StatelessWidget {
