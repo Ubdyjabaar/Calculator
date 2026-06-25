@@ -32,7 +32,7 @@ class _DisplaySectionState extends State<DisplaySection>
   final GlobalKey _richTextKey = GlobalKey();
   final ScrollController _scrollController = ScrollController();
   double _textWidth = 0;
-  int? _dragIndex;
+  int? _localCursorIndex;
 
   @override
   void initState() {
@@ -205,20 +205,23 @@ class _DisplaySectionState extends State<DisplaySection>
                             final calc = context.read<CalculatorProvider>();
                             if (widget.expression.isEmpty) return;
                             final index = _getIndexFromX(event.localPosition.dx);
-                            _dragIndex = index;
+                            _localCursorIndex = index;
+                            _onCursorMoved();
                             calc.setCursorPosition(index);
                           },
                           onPointerMove: (event) {
-                            final calc = context.read<CalculatorProvider>();
                             if (widget.expression.isEmpty) return;
                             final index = _getIndexFromX(event.localPosition.dx);
-                            if (index != _dragIndex) {
-                              _dragIndex = index;
-                              calc.setCursorPosition(index);
+                            if (index != _localCursorIndex) {
+                              _localCursorIndex = index;
+                              setState(() {});
                             }
                           },
                           onPointerUp: (_) {
-                            _dragIndex = null;
+                            if (_localCursorIndex != null) {
+                              context.read<CalculatorProvider>().setCursorPosition(_localCursorIndex!);
+                            }
+                            _localCursorIndex = null;
                             Future.delayed(const Duration(seconds: 2), () {
                               if (mounted) _handleController.reverse();
                             });
@@ -240,9 +243,12 @@ class _DisplaySectionState extends State<DisplaySection>
   }
 
   Widget _buildExpressionWithCursor(ThemeData theme, bool tight) {
-    final before = widget.expression.substring(0, widget.cursorIndex);
-    final after = widget.expression.substring(widget.cursorIndex);
-    final fontSize = _resultFontSize(widget.expression, tight);
+    final cursorIdx = _localCursorIndex ?? widget.cursorIndex;
+    final text = widget.expression;
+    final clampedIdx = cursorIdx.clamp(0, text.length);
+    final before = text.substring(0, clampedIdx);
+    final after = text.substring(clampedIdx);
+    final fontSize = _resultFontSize(text, tight);
     final cursorH = fontSize * 0.65;
     final handleSize = 10.0;
 
