@@ -230,7 +230,7 @@ class CalculatorScreen extends StatelessWidget {
                   onRightParen: calc.inputRightParen,
                   onToggleDegrees: calc.toggleDegrees,
                   degreesMode: calc.degreesMode,
-                  hapticFeedback: true,
+                  hapticFeedback: false,
                 ),
               ),
             Expanded(
@@ -244,7 +244,7 @@ class CalculatorScreen extends StatelessWidget {
                 onToggleSign: calc.toggleSign,
                 onPercent: calc.percent,
                 onDecimal: calc.inputDecimal,
-                hapticFeedback: true,
+                hapticFeedback: false,
               ),
             ),
           ],
