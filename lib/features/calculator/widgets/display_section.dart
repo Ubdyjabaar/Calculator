@@ -58,7 +58,6 @@ class _DisplaySectionState extends State<DisplaySection>
       WidgetsBinding.instance.addPostFrameCallback((_) => _updateTextWidth());
     }
     if (oldWidget.cursorIndex != widget.cursorIndex && widget.cursorIndex >= 0) {
-      _onCursorMoved();
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCursor());
     }
   }
