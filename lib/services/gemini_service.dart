@@ -70,6 +70,9 @@ class GeminiService {
     r = r.replaceAll(RegExp(r'^#+\s*', multiLine: true), '');
     r = r.replaceAll(RegExp(r'\n{3,}'), '\n\n');
     r = r.replaceAllMapped(RegExp(r'^\s*\*\s*', multiLine: true), (_) => '• ');
+    r = r.replaceAll(RegExp(r'^\[?\s*\{.*?\}\s*\]?', multiLine: true), '');
+    r = r.replaceAll(RegExp(r'^\s*\[', multiLine: true), '');
+    r = r.replaceAll(RegExp(r'\]\s*$', multiLine: true), '');
     return r.trim();
   }
 }

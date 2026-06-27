@@ -151,12 +151,19 @@ class CalculatorScreen extends StatelessWidget {
       selector: (_, c) => c.mode,
       builder: (context, mode, _) {
         final c = context.read<CalculatorProvider>();
+        final bg = Theme.of(context).scaffoldBackgroundColor;
         return AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 200),
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.easeIn,
           transitionBuilder: (child, animation) {
             return FadeTransition(opacity: animation, child: child);
           },
-          child: _buildContent(context, c),
+          child: Container(
+            key: ValueKey(mode),
+            color: bg,
+            child: _buildContent(context, c),
+          ),
         );
       },
     );
