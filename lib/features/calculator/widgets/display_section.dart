@@ -27,8 +27,6 @@ class DisplaySection extends StatefulWidget {
 class _DisplaySectionState extends State<DisplaySection>
     with SingleTickerProviderStateMixin {
   late AnimationController _cursorController;
-  late AnimationController _handleController;
-  late AnimationController _bannerController;
   final GlobalKey _richTextKey = GlobalKey();
   final ScrollController _scrollController = ScrollController();
   double _textWidth = 0;
@@ -41,14 +39,6 @@ class _DisplaySectionState extends State<DisplaySection>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..repeat(reverse: true);
-    _handleController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 250),
-    );
-    _bannerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
   }
 
   @override
@@ -60,14 +50,6 @@ class _DisplaySectionState extends State<DisplaySection>
     if (oldWidget.cursorIndex != widget.cursorIndex && widget.cursorIndex >= 0) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCursor());
     }
-  }
-
-  void _onCursorMoved() {
-    _bannerController.forward(from: 0.0);
-    _handleController.forward(from: 0.0);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) _handleController.reverse();
-    });
   }
 
   void _updateTextWidth() {
@@ -113,8 +95,6 @@ class _DisplaySectionState extends State<DisplaySection>
   @override
   void dispose() {
     _cursorController.dispose();
-    _handleController.dispose();
-    _bannerController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -205,7 +185,6 @@ class _DisplaySectionState extends State<DisplaySection>
                             if (widget.expression.isEmpty) return;
                             final index = _getIndexFromX(event.localPosition.dx);
                             _localCursorIndex = index;
-                            _onCursorMoved();
                             calc.setCursorPosition(index);
                           },
                           onPointerMove: (event) {
@@ -221,9 +200,6 @@ class _DisplaySectionState extends State<DisplaySection>
                               context.read<CalculatorProvider>().setCursorPosition(_localCursorIndex!);
                             }
                             _localCursorIndex = null;
-                            Future.delayed(const Duration(seconds: 2), () {
-                              if (mounted) _handleController.reverse();
-                            });
                           },
                           child: SingleChildScrollView(
                             controller: _scrollController,
@@ -249,7 +225,6 @@ class _DisplaySectionState extends State<DisplaySection>
     final after = text.substring(clampedIdx);
     final fontSize = _resultFontSize(text, tight);
     final cursorH = fontSize * 0.65;
-    final handleSize = 10.0;
 
     return RichText(
       key: _richTextKey,
@@ -269,11 +244,8 @@ class _DisplaySectionState extends State<DisplaySection>
             baseline: TextBaseline.alphabetic,
             child: _CursorPainter(
               cursorController: _cursorController,
-              handleController: _handleController,
-              bannerController: _bannerController,
               cursorHeight: cursorH,
               fontSize: fontSize,
-              handleSize: handleSize,
               primaryColor: theme.colorScheme.primary,
             ),
           ),
@@ -305,88 +277,33 @@ class _DisplaySectionState extends State<DisplaySection>
 
 class _CursorPainter extends AnimatedWidget {
   final AnimationController cursorController;
-  final AnimationController handleController;
-  final AnimationController bannerController;
   final double cursorHeight;
   final double fontSize;
-  final double handleSize;
   final Color primaryColor;
 
-  _CursorPainter({
+  const _CursorPainter({
     required this.cursorController,
-    required this.handleController,
-    required this.bannerController,
     required this.cursorHeight,
     required this.fontSize,
-    required this.handleSize,
     required this.primaryColor,
-  }) : super(listenable: Listenable.merge([cursorController, handleController, bannerController]));
+  }) : super(listenable: cursorController);
 
   @override
   Widget build(BuildContext context) {
-    final cursorOpacity = cursorController.value;
-    final handleOpacity = handleController.value;
-    final bannerProgress = bannerController.value;
+    final opacity = cursorController.value;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              width: 2.5,
-              height: cursorHeight,
-              margin: EdgeInsets.only(top: fontSize * 0.25),
-              decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: cursorOpacity),
-                borderRadius: BorderRadius.circular(1.5),
-              ),
-            ),
-            if (bannerProgress > 0.01)
-              Positioned(
-                left: -8,
-                right: -8,
-                top: fontSize * 0.15,
-                child: IgnorePointer(
-                  child: Opacity(
-                    opacity: (1 - bannerProgress) * 0.5,
-                    child: Container(
-                      height: cursorHeight + 6,
-                      decoration: BoxDecoration(
-                        color: primaryColor.withValues(alpha: (1 - bannerProgress) * 0.25),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-        if (handleOpacity > 0.01)
-          Padding(
-            padding: const EdgeInsets.only(top: 3),
-            child: IgnorePointer(
-              child: Opacity(
-                opacity: handleOpacity,
-                child: Container(
-                  width: handleSize,
-                  height: handleSize,
-                  decoration: BoxDecoration(
-                    color: primaryColor,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: primaryColor.withValues(alpha: 0.4),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+        Container(
+          width: 2.5,
+          height: cursorHeight,
+          margin: EdgeInsets.only(top: fontSize * 0.25),
+          decoration: BoxDecoration(
+            color: primaryColor.withValues(alpha: opacity),
+            borderRadius: BorderRadius.circular(1.5),
           ),
+        ),
       ],
     );
   }
